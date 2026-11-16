@@ -1308,10 +1308,29 @@ function switchSeries(series){
 // ═══════════════════════════════════════
 function getFiltered(){
   let rows = DB;
-  if(activeSeries) rows = rows.filter(r => r.series === activeSeries);
+  if(activeSeries === '__FAV__'){
+    rows = rows.filter(r => favorites.has(r.path));
+  } else if(activeSeries === '__RECENT__'){
+    const recMap = new Map();
+    recents.forEach((p, idx) => recMap.set(p, idx));
+    rows = rows.filter(r => recMap.has(r.path)).sort((a,b) => recMap.get(a.path) - recMap.get(b.path));
+  } else if(activeSeries){
+    rows = rows.filter(r => r.series === activeSeries);
+  }
+
   if(queryText){
     const q = queryText.toLowerCase();
-    rows = rows.filter(r => r.name.toLowerCase().includes(q) || getZh(r.name).toLowerCase().includes(q));
+    rows = rows.filter(r => {
+      const zh = getZh(r.name) || '';
+      const sZh = getSeriesLabel(r.series) || '';
+      const subZh = getSubLabel(r.sub) || '';
+      return r.name.toLowerCase().includes(q) ||
+             zh.toLowerCase().includes(q) ||
+             r.series.toLowerCase().includes(q) ||
+             sZh.toLowerCase().includes(q) ||
+             r.sub.toLowerCase().includes(q) ||
+             subZh.toLowerCase().includes(q);
+    });
   }
   return rows;
 }
@@ -1322,10 +1341,19 @@ function renderGrid(){
   document.getElementById('resultsPill').textContent = `${rows.length} 筆`;
 
   if(!rows.length){
+    let emptyTip = '找不到符合的 Amiibo';
+    let emptyIcon = '🍃';
+    if(activeSeries === '__FAV__'){
+      emptyTip = '目前尚無常用收藏<br><span style="font-size:12px;font-weight:400;color:var(--text-muted);">點擊任一卡片右上角的「☆」即可加入收藏</span>';
+      emptyIcon = '⭐';
+    } else if(activeSeries === '__RECENT__'){
+      emptyTip = '尚未有刷取紀錄<br><span style="font-size:12px;font-weight:400;color:var(--text-muted);">連線寫入 Amiibo 後將自動記錄於此</span>';
+      emptyIcon = '🕒';
+    }
     container.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:240px;color:var(--text-muted);gap:10px;">
-        <span style="font-size:38px;">🍃</span>
-        <div style="font-size:14px;font-weight:600;">找不到符合的 Amiibo</div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:240px;color:var(--text-muted);gap:10px;text-align:center;">
+        <span style="font-size:42px;">${emptyIcon}</span>
+        <div style="font-size:14px;font-weight:600;line-height:1.5;">${emptyTip}</div>
       </div>
     `;
     return;
@@ -1333,7 +1361,7 @@ function renderGrid(){
 
   const groups = {};
   for(const r of rows){
-    const g = (!activeSeries || queryText) ? r.series : (r.sub || '主要');
+    const g = (!activeSeries || activeSeries === '__FAV__' || activeSeries === '__RECENT__' || queryText) ? r.series : (r.sub || '主要');
     if(!groups[g]) groups[g] = [];
     groups[g].push(r);
   }
@@ -1341,7 +1369,7 @@ function renderGrid(){
   let html = '';
   for(const [gname, items] of Object.entries(groups)){
     const icon = ICONS[gname] || '📁';
-    const isMainSeries = (!activeSeries || queryText);
+    const isMainSeries = (!activeSeries || activeSeries === '__FAV__' || activeSeries === '__RECENT__' || queryText);
     const displayGroupName = isMainSeries ? getSeriesLabel(gname) : getSubLabel(gname);
     html += `
       <div class="group-header">
