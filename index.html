@@ -82,44 +82,25 @@ header{
 .brand-wrap{
   display:flex;
   align-items:center;
-  gap:10px;
   cursor:pointer;
-  padding:4px 6px;
-  margin-left:-6px;
-  border-radius:12px;
+  padding:4px 0;
+  border-radius:10px;
   transition:opacity 0.15s, transform 0.15s;
+  flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
 }
 .brand-wrap:active{
   opacity:0.65;
-  transform:scale(0.97);
+  transform:scale(0.96);
 }
-.brand-avatar{
-  width:32px;
-  height:32px;
-  border-radius:10px;
-  background:var(--forest-dark);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:16px;
-  box-shadow:0 3px 8px rgba(22,51,36,0.25);
-  flex-shrink:0;
-}
-.brand-title{
-  font-size:16px;
-  font-weight:750;
-  letter-spacing:-0.02em;
-  color:var(--text-title);
-}
-.brand-badge{
-  font-size:11px;
-  font-weight:600;
-  background:var(--mint-light);
-  color:var(--sage-main);
-  padding:2px 8px;
-  border-radius:999px;
-  margin-left:4px;
+.brand-logo-img{
+  height:28px;
+  width:auto;
+  max-width:92px;
+  object-fit:contain;
+  display:block;
+  user-select:none;
+  -webkit-user-drag:none;
 }
 
 .header-actions{
@@ -710,19 +691,41 @@ header{
   box-shadow: 0 0 10px rgba(236, 201, 75, 0.5);
 }
 
+
+/* ─── 手機端頂部導航列防破版與極致適配 ─── */
+@media (max-width: 600px){
+  header{
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  .brand-logo-img{
+    height: 24px !important;
+    max-width: 82px !important;
+  }
+  .header-actions{
+    gap: 4px !important;
+  }
+  .h-btn{
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+  }
+  #pickFolderBtn span{
+    display: none !important; /* 手機端隱藏「資料夾」文字，只保留 📂 圖標，徹底解決超寬破版 */
+  }
+}
+
 </style>
 </head>
 <body>
 
 <!-- 頂部導覽列 (Sticky 吸頂) -->
 <header>
-  <!-- 左上角：點擊回到首頁並重設所有篩選與滾動位置 -->
+  <!-- 左上角：官方彩色 amiibo LOGO（點擊回到首頁並重設所有篩選與滾動位置） -->
   <div class="brand-wrap" id="homeBrandBtn" title="點擊回到首頁">
-    <div class="brand-avatar">🍃</div>
-    <div>
-      <span class="brand-title">Amiibo 傳輸工具</span>
-      <span class="brand-badge">1,088 雲端</span>
-    </div>
+    <img src="assets/amiibo-logo.png" alt="amiibo" class="brand-logo-img">
   </div>
   <div class="header-actions">
     <button class="h-btn icon-only" id="headerFavBtn" title="我的常用收藏">⭐</button>
@@ -745,7 +748,7 @@ header{
     <input type="text" class="search-input" id="searchInput" placeholder="搜尋角色中文或英文名稱…" autocomplete="off">
     <button class="search-clear" id="searchClearBtn">✕</button>
   </div>
-  <div class="results-pill" id="resultsPill">955 筆</div>
+  <div class="results-pill" id="resultsPill">1,088 筆</div>
 </div>
 
 <!-- 主內容與側邊欄容器 -->
