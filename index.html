@@ -8,45 +8,55 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Amiibo 傳輸工具</title>
 <style>
-/* ══ 現代森林綠 (Clean Forest & Sage Green) 視覺系統 ══ */
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+/* ══ 現代森林雅綠 (Modern Forest Green) 視覺系統 ══ */
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
 :root{
-  --bg-app:#f5f7f2;          /* 溫潤淺米灰綠主畫布 */
-  --bg-card:#ffffff;         /* 乾淨卡片底色 */
-  --bg-card-sub:#edf2eb;     /* 次級柔和底色 */
-  --forest-dark:#163324;     /* 核心深松木綠 */
-  --forest-hover:#1e4430;    /* 松木綠懸浮 */
-  --sage-main:#3d8c63;       /* 鼠尾草綠主色 */
-  --mint-light:#e7f5ed;      /* 嫩薄荷綠膠囊背景 */
-  --mint-accent:#52b788;     /* 明亮薄荷綠高亮 */
-  --text-title:#141f18;      /* 濃郁深青墨黑 */
-  --text-body:#435047;       /* 舒適正文深灰綠 */
-  --text-muted:#829187;      /* 輔助灰綠 */
-  --border-card:#e5ede4;     /* 卡片極細邊框 */
-  --border-sub:#d8e4d6;      /* 分隔線 */
+  --bg-app:#f5f7f2;
+  --bg-card:#ffffff;
+  --bg-card-sub:#edf2eb;
+  --forest-dark:#163324;
+  --forest-hover:#1e4430;
+  --sage-main:#3d8c63;
+  --mint-light:#e7f5ed;
+  --mint-accent:#52b788;
+  --text-title:#141f18;
+  --text-body:#435047;
+  --text-muted:#829187;
+  --border-card:#e5ede4;
+  --border-sub:#d8e4d6;
   --shadow-sm:0 2px 8px rgba(22,51,36,0.04);
   --shadow-card:0 4px 16px rgba(22,51,36,0.06);
-  --shadow-hover:0 8px 24px rgba(22,51,36,0.12);
   --shadow-float:0 12px 36px rgba(22,51,36,0.22);
   --safe-bottom:env(safe-area-inset-bottom, 0px);
   --safe-top:env(safe-area-inset-top, 0px);
 }
 
-/* 針對 iOS / Bluefy / WebKit 的自然滾動核心修正 */
+/* ══ 徹底解決 iOS / Safari / Bluefy 觸控滑動卡頓的核心規範 ══ */
 html{
   background:var(--bg-app);
-  height:100%;
+  height:auto;
+  min-height:100%;
 }
 body{
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Microsoft JhengHei",sans-serif;
   background:var(--bg-app);
   color:var(--text-body);
   min-height:100%;
+  height:auto;
   overflow-x:hidden;
-  overflow-y:auto;
+  overflow-y:scroll;
   -webkit-overflow-scrolling:touch;
   touch-action:pan-y;
   position:relative;
+  /* 防止在手機上長按滑動時觸發文字選取或彈出選單 */
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
 }
 
 /* ══ 頂部 HEADER (Sticky 吸頂) ══ */
@@ -65,11 +75,23 @@ header{
   padding-left:16px;
   padding-right:16px;
   z-index:50;
+  touch-action:none;
 }
+
+/* 左上角點擊返回首頁按鈕區塊 */
 .brand-wrap{
   display:flex;
   align-items:center;
   gap:10px;
+  cursor:pointer;
+  padding:4px 6px;
+  margin-left:-6px;
+  border-radius:12px;
+  transition:opacity 0.15s, transform 0.15s;
+}
+.brand-wrap:active{
+  opacity:0.65;
+  transform:scale(0.97);
 }
 .brand-avatar{
   width:32px;
@@ -82,6 +104,7 @@ header{
   justify-content:center;
   font-size:16px;
   box-shadow:0 3px 8px rgba(22,51,36,0.25);
+  flex-shrink:0;
 }
 .brand-title{
   font-size:16px;
@@ -118,7 +141,7 @@ header{
   font-weight:600;
   cursor:pointer;
   box-shadow:var(--shadow-sm);
-  transition:all 0.15s;
+  transition:background 0.15s;
 }
 .h-btn:hover{background:#fff;border-color:var(--sage-main);color:var(--forest-dark)}
 .h-btn:active{transform:scale(0.95)}
@@ -142,6 +165,7 @@ header{
   scrollbar-width:none;
   -ms-overflow-style:none;
   -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
 }
 .categories-bar::-webkit-scrollbar{display:none}
 
@@ -159,10 +183,10 @@ header{
   gap:6px;
   cursor:pointer;
   box-shadow:var(--shadow-sm);
-  transition:all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:background 0.15s, color 0.15s;
   flex-shrink:0;
+  touch-action:pan-x;
 }
-.cat-pill:hover{border-color:var(--sage-main)}
 .cat-pill:active{transform:scale(0.96)}
 .cat-pill.active{
   background:var(--forest-dark);
@@ -202,7 +226,8 @@ header{
   font-weight:500;
   outline:none;
   box-shadow:var(--shadow-sm);
-  transition:all 0.2s;
+  -webkit-user-select:text;
+  user-select:text;
 }
 .search-input:focus{
   border-color:var(--sage-main);
@@ -277,15 +302,16 @@ header{
 .side-item.active{background:var(--mint-light);color:var(--forest-dark);font-weight:700}
 .side-item span.badge{margin-left:auto;font-size:11px;color:var(--text-muted);background:#fff;padding:2px 6px;border-radius:999px;border:1px solid var(--border-card)}
 
-/* 主內容區 (自然瀑布滾動) */
+/* 主內容區 */
 .main-view{
   flex:1;
   min-width:0;
-  padding-bottom:140px; /* 留出底部懸浮膠囊空間 */
+  padding-bottom:140px;
 }
 
 .cards-container{
   padding:0 16px;
+  touch-action:pan-y;
 }
 
 .group-header{
@@ -313,7 +339,7 @@ header{
   gap:12px;
 }
 
-/* ══ 單一卡片 ══ */
+/* ══ 單一卡片 (徹底優化觸控事件與重繪效能) ══ */
 .card-item{
   background:var(--bg-card);
   border:1px solid var(--border-card);
@@ -325,18 +351,12 @@ header{
   text-align:center;
   cursor:pointer;
   box-shadow:var(--shadow-card);
-  transition:all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position:relative;
   overflow:hidden;
-}
-.card-item:hover{
-  background:#fff;
-  border-color:var(--border-sub);
-  transform:translateY(-3px);
-  box-shadow:var(--shadow-hover);
-}
-.card-item:active{
-  transform:scale(0.96);
+  touch-action:pan-y;
+  /* 效能最佳化：允許瀏覽器跳過視窗外複雜節點的重繪 */
+  content-visibility:auto;
+  contain-intrinsic-size:160px;
 }
 .card-item.selected{
   background:#ffffff;
@@ -361,17 +381,18 @@ header{
   align-items:center;
   justify-content:center;
   margin-bottom:8px;
+  pointer-events:none; /* 關鍵！圖片不攔截觸碰事件，手勢 100% 傳遞給滾動 */
 }
 .card-img-elem{
   width:84px;
   height:84px;
   object-fit:contain;
   opacity:0;
-  transition:opacity 0.25s, transform 0.25s;
-  filter:drop-shadow(0 4px 10px rgba(0,0,0,0.12));
+  transition:opacity 0.2s;
+  pointer-events:none;
+  -webkit-user-drag:none;
 }
 .card-img-elem.loaded{opacity:1}
-.card-item:hover .card-img-elem{transform:scale(1.06)}
 .card-emoji-alt{
   position:absolute;
   inset:0;
@@ -380,6 +401,7 @@ header{
   justify-content:center;
   font-size:36px;
   color:var(--text-muted);
+  pointer-events:none;
 }
 .card-img-elem.loaded + .card-emoji-alt{display:none}
 
@@ -392,6 +414,7 @@ header{
   overflow:hidden;
   text-overflow:ellipsis;
   letter-spacing:-0.01em;
+  pointer-events:none;
 }
 .card-en-sub{
   font-size:11px;
@@ -402,6 +425,7 @@ header{
   overflow:hidden;
   text-overflow:ellipsis;
   margin-top:2px;
+  pointer-events:none;
 }
 
 .card-local-tag{
@@ -415,6 +439,7 @@ header{
   padding:2px 6px;
   border-radius:999px;
   font-weight:700;
+  pointer-events:none;
 }
 
 /* ══ 底部懸浮深森林綠膠囊列 (Fixed) ══ */
@@ -435,7 +460,7 @@ header{
   z-index:60;
   box-shadow:var(--shadow-float);
   border:1px solid rgba(255,255,255,0.08);
-  transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action:none;
 }
 .capsule-thumb{
   width:44px;
@@ -445,11 +470,12 @@ header{
   background:rgba(255,255,255,0.1);
   padding:3px;
   flex-shrink:0;
-  filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  pointer-events:none;
 }
 .capsule-info{
   flex:1;
   min-width:0;
+  pointer-events:none;
 }
 .capsule-name{
   font-size:14px;
@@ -484,8 +510,8 @@ header{
   white-space:nowrap;
   flex-shrink:0;
   box-shadow:0 3px 10px rgba(0,0,0,0.15);
+  touch-action:manipulation;
 }
-.capsule-action-btn:hover{background:#f0f5f1;transform:scale(1.02)}
 .capsule-action-btn:active{transform:scale(0.95)}
 .capsule-action-btn:disabled{
   opacity:0.35;
@@ -564,7 +590,7 @@ header{
 }
 .drawer-title-row h3{font-size:16px;font-weight:750;color:var(--text-title)}
 .drawer-close{background:none;border:none;font-size:20px;color:var(--text-muted);cursor:pointer}
-.drawer-scroll-body{overflow-y:auto;padding:12px 16px;-webkit-overflow-scrolling:touch}
+.drawer-scroll-body{overflow-y:auto;padding:12px 16px;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .drawer-row-btn{
   width:100%;
   display:flex;
@@ -613,7 +639,8 @@ header{
 
 <!-- 頂部導覽列 (Sticky 吸頂) -->
 <header>
-  <div class="brand-wrap">
+  <!-- 左上角：點擊回到首頁並重設所有篩選與滾動位置 -->
+  <div class="brand-wrap" id="homeBrandBtn" title="點擊回到首頁">
     <div class="brand-avatar">🍃</div>
     <div>
       <span class="brand-title">Amiibo 傳輸工具</span>
@@ -642,7 +669,7 @@ header{
   <div class="results-pill" id="resultsPill">955 筆</div>
 </div>
 
-<!-- 主內容與側邊欄容器 (自然滾動佈局) -->
+<!-- 主內容與側邊欄容器 -->
 <div class="page-layout">
   <!-- 桌面側邊欄 -->
   <aside class="desktop-side-panel">
@@ -814,6 +841,25 @@ function getSeriesData(){
 }
 
 // ═══════════════════════════════════════
+//  左上角點擊返回一開始的頁面
+// ═══════════════════════════════════════
+document.getElementById('homeBrandBtn').addEventListener('click', () => {
+  // 1. 重設分類為全部
+  activeSeries = null;
+  // 2. 清空搜尋條件
+  queryText = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClearBtn').style.display = 'none';
+  // 3. 重新渲染分類與格線
+  renderCategories();
+  renderGrid();
+  // 4. 平滑滑動回頁面頂部
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // 5. 提示使用者
+  showEcoToast('🍃 已重設並返回首頁');
+});
+
+// ═══════════════════════════════════════
 //  渲染分類 UI
 // ═══════════════════════════════════════
 function renderCategories(){
@@ -878,7 +924,6 @@ function switchSeries(series){
   activeSeries = series;
   renderCategories();
   renderGrid();
-  // 平滑滾動頁面至頂部
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
