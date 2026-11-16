@@ -1,4 +1,2 @@
-# 忽略所有 bin 檔案與大型資料夾
 Amiibo-main 2/
-*.bin
 .DS_Store
