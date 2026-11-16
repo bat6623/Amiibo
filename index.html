@@ -637,34 +637,36 @@ header{
 /* ─── 常用收藏與進階按鈕樣式 ─── */
 .card-fav-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
+  top: 7px;
+  right: 7px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  color: #a0aec0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #718096;
   cursor: pointer;
-  z-index: 3;
+  z-index: 10;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   line-height: 1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  -webkit-tap-highlight-color: transparent;
 }
 .card-fav-btn:active {
-  transform: scale(0.85);
+  transform: scale(0.82);
 }
 .card-fav-btn.active {
   color: #d69e2e;
-  background: #ffffff;
-  border-color: rgba(214, 158, 46, 0.4);
-  box-shadow: 0 2px 8px rgba(214, 158, 46, 0.35);
+  background: #fffbeb;
+  border-color: #f6ad55;
+  box-shadow: 0 2px 10px rgba(214, 158, 46, 0.45);
 }
 
 /* 404 圖片智慧兜底 */
@@ -723,6 +725,7 @@ header{
     </div>
   </div>
   <div class="header-actions">
+    <button class="h-btn icon-only" id="headerFavBtn" title="我的常用收藏">⭐</button>
     <button class="h-btn icon-only" id="soundToggleBtn" title="點擊切換音效開關">🔊</button>
     <button class="h-btn icon-only" id="openDrawerBtn" title="選擇系列分類">🏷️</button>
     <button class="h-btn" id="pickFolderBtn" title="自選本地資料夾">📂 <span>資料夾</span></button>
@@ -1098,15 +1101,14 @@ function getSeriesData(){
     label: name.replace(/ Amiibo$/, '')
   }));
 
-  const special = [];
-  if(favorites.size > 0){
-    special.push({
+  const special = [
+    {
       name: '__FAV__',
       count: favorites.size,
       icon: '⭐',
       label: '常用收藏'
-    });
-  }
+    }
+  ];
   if(recents.length > 0){
     special.push({
       name: '__RECENT__',
@@ -1256,9 +1258,11 @@ function renderGrid(){
       const zh = getZh(r.name);
       const emoji = getEmoji(r.name);
       const disp = r.name.replace(/^\[AC\] \d+ - /,'').replace(/^\[.*?\] /,'');
+      const isFav = favorites.has(r.path);
 
       html += `
         <div class="card-item ${isSelected ? 'selected' : ''}" data-path="${esc(r.path)}">
+          <button class="card-fav-btn ${isFav ? 'active' : ''}" data-fav-path="${esc(r.path)}" title="${isFav ? '取消收藏' : '加入收藏'}">${isFav ? '★' : '☆'}</button>
           ${hasLocal ? '<span class="card-local-tag">本地</span>' : ''}
           <div class="card-img-box">
             ${r.img ? `<img class="card-img-elem" data-src="${esc(r.img)}" src="" alt="">` : ''}
@@ -1528,6 +1532,18 @@ if(soundBtn){
     playHaptic('tap');
     if(soundEnabled) playSfx('fav');
     showEcoToast(soundEnabled ? '🔊 已開啟提示音效' : '🔇 已開啟靜音模式');
+  });
+}
+
+
+// ─── 頂部導航列 ⭐ 收藏快捷鍵 ───
+const headerFavBtn = document.getElementById('headerFavBtn');
+if(headerFavBtn){
+  headerFavBtn.addEventListener('click', () => {
+    switchSeries('__FAV__');
+    playHaptic('tap');
+    playSfx('tap');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
 
