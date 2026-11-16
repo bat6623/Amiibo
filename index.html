@@ -63,12 +63,13 @@ body{
 header{
   position:sticky;
   top:0;
-  height:calc(56px + var(--safe-top));
+  height:calc(60px + var(--safe-top));
   padding-top:var(--safe-top);
-  background:rgba(245,247,242,0.92);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border-sub);
+  background:rgba(246, 248, 244, 0.88);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border-bottom:1px solid rgba(22, 51, 36, 0.08);
+  box-shadow:0 2px 16px rgba(22, 51, 36, 0.035);
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -76,52 +77,58 @@ header{
   padding-right:16px;
   z-index:50;
   touch-action:none;
+  transition:background 0.2s, box-shadow 0.2s;
 }
 
-/* 左上角點擊返回首頁按鈕區塊 */
+/* 左上角官方彩色 amiibo LOGO */
 .brand-wrap{
   display:flex;
   align-items:center;
   cursor:pointer;
-  padding:4px 0;
+  padding:4px 2px;
   border-radius:10px;
-  transition:opacity 0.15s, transform 0.15s;
+  transition:opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink:0;
   -webkit-tap-highlight-color:transparent;
 }
 .brand-wrap:active{
-  opacity:0.65;
-  transform:scale(0.96);
+  opacity:0.75;
+  transform:scale(0.95);
 }
 .brand-logo-img{
-  height:28px;
+  height:36px;
   width:auto;
-  max-width:92px;
+  max-width:125px;
   object-fit:contain;
   display:block;
   user-select:none;
   -webkit-user-drag:none;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,0.06));
 }
 
 .header-actions{
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:6px;
+  flex-shrink:0;
 }
 .h-btn{
-  background:var(--bg-card);
-  border:1px solid var(--border-card);
+  background:rgba(255, 255, 255, 0.88);
+  border:1px solid rgba(22, 51, 36, 0.1);
   color:var(--text-body);
   height:34px;
   padding:0 12px;
   border-radius:999px;
   display:flex;
   align-items:center;
-  gap:6px;
+  justify-content:center;
+  gap:5px;
   font-size:12px;
-  font-weight:600;
+  font-weight:650;
   cursor:pointer;
-  box-shadow:var(--shadow-sm);
+  box-shadow:0 2px 6px rgba(22, 51, 36, 0.04);
+  transition:all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-tap-highlight-color:transparent;
   transition:background 0.15s;
 }
 .h-btn:hover{background:#fff;border-color:var(--sage-main);color:var(--forest-dark)}
@@ -695,25 +702,27 @@ header{
 /* ─── 手機端頂部導航列防破版與極致適配 ─── */
 @media (max-width: 600px){
   header{
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+    height: calc(58px + var(--safe-top)) !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
   }
   .brand-logo-img{
-    height: 24px !important;
-    max-width: 82px !important;
+    height: 32px !important; /* 手機端顯著放大 LOGO */
+    max-width: 102px !important;
   }
   .header-actions{
-    gap: 4px !important;
+    gap: 5px !important;
   }
   .h-btn{
-    width: 32px !important;
-    height: 32px !important;
+    width: 33px !important;
+    height: 33px !important;
     padding: 0 !important;
     justify-content: center !important;
     font-size: 14px !important;
+    border-radius: 50% !important;
   }
   #pickFolderBtn span{
-    display: none !important; /* 手機端隱藏「資料夾」文字，只保留 📂 圖標，徹底解決超寬破版 */
+    display: none !important; /* 手機端隱藏「資料夾」文字，只保留 📂 圖標 */
   }
 }
 
