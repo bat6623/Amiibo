@@ -1039,6 +1039,102 @@ const ZH = {
   'Daijobu':'大丈夫博士'
 };
 
+// ═══════════════════════════════════════
+//  系列與子分類繁體中文字典
+// ═══════════════════════════════════════
+const SERIES_ZH = {
+  'Animal Crossing Amiibo': '動物森友會',
+  'Super Smash Bros Amiibo': '任天堂明星大亂鬥',
+  'The Legend of Zelda Amiibo': '薩爾達傳說',
+  'Super Mario Amiibo': '超級瑪利歐',
+  'Splatoon Amiibo': '斯普拉頓 (漆彈大作戰)',
+  'Kirby Amiibo': '星之卡比',
+  'Monster Hunter Amiibo': '魔物獵人',
+  'Mario Sports Superstars Amiibo': '瑪利歐運動超明星',
+  'Street Fighter Amiibo': '快打旋風',
+  'Metroid Amiibo': '銀河戰士',
+  'PowerUpBands': '任天堂世界能量手環',
+  'Power Pros Amiibo': '實況野球',
+  'Yu-Gi-Oh! Amiibo': '遊戲王',
+  'My Mario Amiibo': '積木瑪利歐',
+  'Yoshi’s Wooly World Amiibo': '毛線耀西',
+  'Shovel Knight Amiibo': '鏟子騎士',
+  'Fire Emblem Amiibo': '聖火降魔錄',
+  'Skylanders Amiibo': '寶貝龍冒險',
+  'Xenoblade Chronicles': '異度神劍',
+  'Resident Evil Amiibo': '惡靈古堡',
+  'Pokkén Tournament Amiibo': '寶可夢鐵拳',
+  'Mega Man Amiibo': '洛克人',
+  'Donkey Kong Bananza Amiibo': '咚奇剛大冒險',
+  'Detective Pikachu Amiibo': '名偵探皮卡丘',
+  'BoxBoy! Amiibo': '方塊男孩',
+  'Kellogs Amiibo': '美味早餐 (家樂氏)',
+  'Dark Souls Amiibo': '黑暗靈魂',
+  'Pikmin Amiibo': '皮克敏',
+  'Diablo Amiibo': '暗黑破壞神',
+  'Pragmata Amiibo': '虛實萬象',
+  'Chibi-Robo! Amiibo': '小小機器人',
+  '!Essential Files': '底層金鑰與工具'
+};
+
+const SUB_ZH = {
+  'Tears of the Kingdom': '王國之淚',
+  'Breath of the Wild': '曠野之息',
+  'Twilight Princess': '曙光公主',
+  'Link’s Awakening': '織夢島',
+  'Skyward Sword HD': '禦天之劍 HD',
+  'Ocarina of Time Remake': '時之笛重製',
+  'Anniversary': '週年紀念版',
+  'Amiibo Cards': '卡牌系列',
+  'Amiibo Figures': '公仔系列',
+  'Happy Home Designer Items': '快樂之森設計家',
+  'Cards': '卡牌系列',
+  'Baseball': '棒球',
+  'Soccer': '足球',
+  'Tennis': '網球',
+  'Golf': '高爾夫',
+  'Horse Racing': '賽馬',
+  'MHR_ Sunbreak': '破曉',
+  'MH_ Rise': '崛起',
+  'MH_ Stories': '物語 1',
+  'MH_ Stories 2': '物語 2 破滅之翼',
+  'MH_ Stories 3': '物語 3',
+  'Metroid Dread': '生存恐懼',
+  'Metroid Prime 4': 'Prime 4',
+  'Metroid_ Samus Returns': '薩姆斯歸來',
+  '!UNOFFICIAL FIGHTER PASS 2 AMIIBO': '特裝版鬥士 Pass 2'
+};
+
+function getSeriesLabel(name){
+  if(name === '__FAV__') return '常用收藏';
+  if(name === '__RECENT__') return '最近刷取';
+  if(SERIES_ZH[name]) return SERIES_ZH[name];
+  return name.replace(/ Amiibo$/, '');
+}
+
+function getSubLabel(name){
+  if(!name) return '主要';
+  if(SUB_ZH[name]) return SUB_ZH[name];
+  const parts = name.split('/');
+  const translated = parts.map(p => {
+    p = p.replace(/^!/, '');
+    if(SUB_ZH[p]) return SUB_ZH[p];
+    if(p.startsWith('Series ')) return `第 ${p.replace('Series ', '')} 彈`;
+    if(p === 'Sanrio Cards') return '三麗鷗聯名卡';
+    if(p === 'Welcome Amiibo') return '露營車卡';
+    if(p === 'Special Edition') return '特別限定卡';
+    if(p === 'Amiibo Festival') return '歡樂節日';
+    if(p === 'Bandana Waddle Dee') return '頭巾瓦豆魯迪';
+    if(p === 'Chef Kawasaki') return '川崎主廚';
+    if(p === 'King Dedede') return '帝帝帝大王';
+    if(p === 'Kirby') return '卡比';
+    if(p === 'Meta Knight') return '魅塔騎士';
+    if(p === 'Kirby Air Riders Amiibo') return '空中騎士';
+    return p;
+  });
+  return translated.join(' · ');
+}
+
 const ICONS = {
   'Super Smash Bros Amiibo':'🥊',
   'The Legend of Zelda Amiibo':'🗡️',
@@ -1098,7 +1194,7 @@ function getSeriesData(){
     name,
     count,
     icon: ICONS[name] || '📁',
-    label: name.replace(/ Amiibo$/, '')
+    label: getSeriesLabel(name)
   }));
 
   const special = [
@@ -1245,9 +1341,11 @@ function renderGrid(){
   let html = '';
   for(const [gname, items] of Object.entries(groups)){
     const icon = ICONS[gname] || '📁';
+    const isMainSeries = (!activeSeries || queryText);
+    const displayGroupName = isMainSeries ? getSeriesLabel(gname) : getSubLabel(gname);
     html += `
       <div class="group-header">
-        <span>${icon} ${gname.replace(/ Amiibo$/, '')}</span>
+        <span>${icon} ${displayGroupName}</span>
         <span class="pill-count">${items.length}</span>
       </div>
       <div class="cards-grid">
