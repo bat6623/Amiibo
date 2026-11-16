@@ -14,59 +14,51 @@
       min-height: 100vh;
     }
 
-    /* ── 頂部標題 ── */
     header {
       background: #1a1a1a;
       border-bottom: 2px solid #e60012;
-      padding: 16px 20px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    header .logo {
-      font-size: 24px;
+    header .logo { font-size: 24px; }
+    header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    header small { font-size: 12px; color: #888; display: block; }
+    .api-status {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #222;
+      color: #666;
+      white-space: nowrap;
     }
-    header h1 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-    }
-    header small {
-      font-size: 12px;
-      color: #888;
-      display: block;
-    }
+    .api-status.ok { background: #1a2e1a; color: #4caf50; }
+    .api-status.loading { background: #2a2a1a; color: #ffb300; }
+    .api-status.error { background: #2e1a1a; color: #f44336; }
 
-    /* ── 主要布局 ── */
     .layout {
       display: grid;
-      grid-template-columns: 280px 1fr;
-      height: calc(100vh - 65px);
+      grid-template-columns: 270px 1fr;
+      height: calc(100vh - 63px);
     }
 
-    /* ── 左側資料夾面板 ── */
+    /* ── 左側 ── */
     .sidebar {
       background: #161616;
       border-right: 1px solid #2a2a2a;
       overflow-y: auto;
       padding: 12px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
     }
-
-    .sidebar-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 4px 16px 8px;
-    }
-
-    /* 開啟資料夾按鈕 */
     .open-folder-btn {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin: 0 12px 12px;
+      margin: 0 12px 10px;
       padding: 10px 14px;
       background: #e60012;
       color: #fff;
@@ -75,16 +67,19 @@
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
       width: calc(100% - 24px);
+      transition: background 0.2s;
     }
     .open-folder-btn:hover { background: #cc0010; }
-
-    /* 分類項目 */
-    .category-item {
-      cursor: pointer;
-      user-select: none;
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 16px 6px;
     }
+    .category-item { cursor: pointer; user-select: none; }
     .category-header {
       display: flex;
       align-items: center;
@@ -96,24 +91,15 @@
     }
     .category-header:hover { background: #222; }
     .category-header.active { background: #1e1e1e; color: #fff; }
-    .category-header .icon { font-size: 16px; flex-shrink: 0; }
-    .category-header .caret {
-      margin-left: auto;
-      font-size: 10px;
-      color: #555;
-      transition: transform 0.2s;
-    }
+    .category-header .icon { font-size: 15px; flex-shrink: 0; }
+    .category-header .caret { margin-left: auto; font-size: 10px; color: #555; transition: transform 0.2s; }
     .category-header.open .caret { transform: rotate(90deg); }
-
-    /* 子分類 */
-    .subcategory-list {
-      display: none;
-    }
+    .subcategory-list { display: none; }
     .subcategory-list.open { display: block; }
     .subcategory-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       padding: 6px 16px 6px 36px;
       font-size: 12px;
       color: #aaa;
@@ -123,18 +109,12 @@
     .subcategory-item:hover { background: #1e1e1e; color: #fff; }
     .subcategory-item.selected { background: #1a2a3a; color: #5aacff; }
 
-    /* ── 右側主面板 ── */
-    .main {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* 搜尋列 */
+    /* ── 右側 ── */
+    .main { display: flex; flex-direction: column; overflow: hidden; }
     .search-bar {
       background: #1a1a1a;
       border-bottom: 1px solid #2a2a2a;
-      padding: 12px 16px;
+      padding: 10px 16px;
       display: flex;
       gap: 10px;
       align-items: center;
@@ -152,92 +132,114 @@
     }
     .search-input:focus { border-color: #e60012; }
     .search-input::placeholder { color: #555; }
-
-    /* 麵包屑 */
     .breadcrumb {
       background: #111;
-      padding: 8px 16px;
+      padding: 7px 16px;
       font-size: 12px;
       color: #666;
       border-bottom: 1px solid #2a2a2a;
       flex-shrink: 0;
     }
-    .breadcrumb span { color: #aaa; }
 
-    /* 角色格線 */
     .character-grid {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      padding: 14px 16px;
     }
-
     .section-heading {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
-      color: #666;
+      color: #555;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      padding: 4px 0 10px;
-      border-bottom: 1px solid #222;
-      margin-bottom: 12px;
+      padding: 4px 0 8px;
+      border-bottom: 1px solid #1e1e1e;
+      margin-bottom: 10px;
+      margin-top: 4px;
     }
-
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 10px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      margin-bottom: 20px;
     }
 
+    /* ── 卡片 ── */
     .char-card {
       background: #1a1a1a;
-      border: 1px solid #2a2a2a;
+      border: 1.5px solid #2a2a2a;
       border-radius: 10px;
-      padding: 12px 10px;
+      padding: 10px 8px 8px;
       text-align: center;
       cursor: pointer;
       transition: all 0.15s;
       position: relative;
+      overflow: hidden;
     }
     .char-card:hover {
       background: #222;
       border-color: #e60012;
       transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(230,0,18,0.2);
     }
     .char-card.selected {
       background: #1a1a2e;
       border-color: #5aacff;
+      box-shadow: 0 0 0 2px rgba(90,172,255,0.2);
     }
-    .char-card .emoji {
-      font-size: 28px;
+    /* 圖片容器 */
+    .card-img-wrap {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .card-img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
       display: block;
-      margin-bottom: 6px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+      transition: opacity 0.3s;
+    }
+    .card-img.loading { opacity: 0; }
+    .card-img-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      opacity: 0.5;
     }
     .char-card .name-en {
-      font-size: 11px;
+      font-size: 10px;
       color: #ccc;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin-top: 2px;
     }
     .char-card .name-zh {
       font-size: 10px;
-      color: #888;
-      margin-top: 2px;
+      color: #777;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .char-card .file-badge {
+    .file-badge {
       position: absolute;
-      top: 6px;
-      right: 6px;
-      background: #333;
-      border-radius: 4px;
-      padding: 1px 4px;
-      font-size: 9px;
-      color: #666;
-    }
-    .char-card.has-file .file-badge {
+      top: 5px;
+      right: 5px;
       background: #1a3a1a;
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 8px;
       color: #4caf50;
     }
 
@@ -247,58 +249,60 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 300px;
+      height: 280px;
       color: #555;
       text-align: center;
-      gap: 12px;
+      gap: 10px;
     }
-    .empty-state .big-icon { font-size: 48px; }
+    .empty-state .big-icon { font-size: 44px; }
     .empty-state p { font-size: 14px; }
     .empty-state small { font-size: 12px; color: #444; }
 
-    /* ── 底部傳輸面板 ── */
+    /* ── 底部 ── */
     .bottom-panel {
       background: #1a1a1a;
       border-top: 2px solid #2a2a2a;
-      padding: 14px 20px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       flex-shrink: 0;
     }
-
-    .selected-file-info {
-      flex: 1;
-      min-width: 0;
+    /* 選中角色預覽 */
+    .selected-preview {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      object-fit: contain;
+      display: none;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
-    .selected-file-info .label {
-      font-size: 11px;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+    .selected-preview.show { display: block; }
+    .selected-file-info { flex: 1; min-width: 0; }
+    .selected-file-info .label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.06em; }
+    .selected-file-info .filename { font-size: 14px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .selected-file-info .filepath { font-size: 11px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .btn-manual-pick {
+      background: transparent;
+      color: #aaa;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
     }
-    .selected-file-info .filename {
-      font-size: 14px;
-      color: #fff;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .selected-file-info .filepath {
-      font-size: 11px;
-      color: #666;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
+    .btn-manual-pick:hover { border-color: #aaa; color: #fff; }
     .btn-send {
       background: #e60012;
       color: #fff;
       border: none;
-      border-radius: 10px;
-      padding: 12px 24px;
+      border-radius: 8px;
+      padding: 10px 20px;
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
@@ -312,29 +316,12 @@
     .btn-send:hover:not(:disabled) { background: #cc0010; }
     .btn-send:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .btn-manual-pick {
-      background: transparent;
-      color: #aaa;
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .btn-manual-pick:hover { border-color: #aaa; color: #fff; }
-
-    /* 狀態列 */
     .log-bar {
       background: #111;
-      border-top: 1px solid #222;
-      padding: 6px 20px;
+      border-top: 1px solid #1e1e1e;
+      padding: 5px 16px;
       font-size: 11px;
-      color: #666;
+      color: #555;
       flex-shrink: 0;
       font-family: monospace;
     }
@@ -342,17 +329,12 @@
     .log-bar.error { color: #f44336; }
     .log-bar.busy { color: #ffb300; }
 
-    /* 隱藏原生 file input */
-    #manualFileInput { display: none; }
-    #folderInput { display: none; }
+    #manualFileInput, #folderInput { display: none; }
 
-    /* 卷軸樣式 */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #444; }
+    ::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 3px; }
 
-    /* 響應式 */
     @media (max-width: 600px) {
       .layout { grid-template-columns: 1fr; }
       .sidebar { display: none; }
@@ -367,26 +349,16 @@
     <h1>Amiibo 傳輸工具</h1>
     <small>omllbolink BLE 傳輸 · 選擇角色 → 連線寫入</small>
   </div>
+  <div class="api-status loading" id="apiStatus">🔄 載入圖片資料庫…</div>
 </header>
 
 <div class="layout">
-
-  <!-- ═══════════════════════════════════
-       左側：分類導覽
-  ═══════════════════════════════════ -->
   <aside class="sidebar">
-    <button class="open-folder-btn" id="openFolderBtn">
-      📂 開啟 Amiibo Bin 資料夾
-    </button>
+    <button class="open-folder-btn" id="openFolderBtn">📂 開啟 Amiibo Bin 資料夾</button>
     <div class="sidebar-title">系列分類</div>
-    <div id="categoryTree">
-      <!-- 由 JS 動態生成，或使用預設清單 -->
-    </div>
+    <div id="categoryTree"></div>
   </aside>
 
-  <!-- ═══════════════════════════════════
-       右側：角色選擇 + 傳輸
-  ═══════════════════════════════════ -->
   <div class="main">
     <div class="search-bar">
       <input class="search-input" id="searchInput" type="text" placeholder="搜尋角色名稱（英文或中文）…">
@@ -396,21 +368,18 @@
       <div class="empty-state">
         <span class="big-icon">📂</span>
         <p>點擊左側「開啟 Amiibo Bin 資料夾」</p>
-        <small>選擇包含 .bin 檔案的資料夾，或直接從下方手動選取單一檔案</small>
+        <small>選擇包含 .bin 檔案的資料夾，或從下方手動選取單一檔案</small>
       </div>
     </div>
     <div class="bottom-panel">
+      <img class="selected-preview" id="selectedPreview" src="" alt="">
       <div class="selected-file-info">
         <div class="label">已選擇的檔案</div>
         <div class="filename" id="selectedFileName">（尚未選擇）</div>
         <div class="filepath" id="selectedFilePath">請從上方角色列表點選，或手動選取 .bin 檔案</div>
       </div>
-      <button class="btn-manual-pick" id="manualPickBtn" title="手動選取 .bin 檔案">
-        📄 選擇檔案
-      </button>
-      <button class="btn-send" id="sendBtn" disabled>
-        🔵 連線並傳送
-      </button>
+      <button class="btn-manual-pick" id="manualPickBtn">📄 選擇檔案</button>
+      <button class="btn-send" id="sendBtn" disabled>🔵 連線並傳送</button>
     </div>
     <div class="log-bar" id="logBar">就緒 — 請選擇角色並按下「連線並傳送」</div>
   </div>
@@ -420,723 +389,525 @@
 <input type="file" id="folderInput" webkitdirectory multiple accept=".bin">
 
 <script>
-  // ═══════════════════════════════════════════════════════
-  //  中文對照表（英文名稱 → 中文名稱）
-  // ═══════════════════════════════════════════════════════
-  const ZH_NAMES = {
-    // ── Animal Crossing ──
-    'Blathers': '布魯托斯（化石館長）',
-    'Celeste': '星星（貓頭鷹妹妹）',
-    'Cyrrus': '西路斯',
-    'Digby': '迪比（館長弟弟）',
-    'Isabelle': '西施惠（市長助理）',
-    'K.K. Slider': 'K.K.滑手（吉他狗）',
-    'Kapp_n': '卡帕（划船烏龜）',
-    'Kicks': '斯哥（鞋店）',
-    'Lottie': '蘿蒂（設計師）',
-    'Mabel': '美貝（裁縫店）',
-    'Reese': '莉茲（回收鋪）',
-    'Resetti': '雷賽蒂（鼴鼠）',
-    'Rover': '羅瓦爾（貓咪）',
-    'Summertime Isabelle': '夏日西施惠',
-    'Timmy _ Tommy': '提米和湯米（雙胞胎）',
-    'Tom Nook': '狸克（狸貓店長）',
-    // AC Cards
-    'Isabelle (AF1)': '西施惠 AF1',
-    'Rosie': '若絲（粉貓）',
-    'Goldie': '葛蒂（金狗）',
-    'Rilla': '莉拉（三麗鷗）',
-    'Marty': '馬提（三麗鷗）',
-    'Etoile': '伊托艾爾（三麗鷗）',
-    'Chai': '柴（三麗鷗）',
-    'Chelsea': '雀爾喜（三麗鷗）',
-    'Toby': '托比（三麗鷗）',
-    'DJ KK': 'DJ KK滑手',
-    'Sable': '沙貝爾（裁縫姊）',
-    'Kapp\'n': '卡帕（划船烏龜）',
-    'Joan': '珍（蕪菁奶奶）',
-    'Timmy': '提米',
-    'Tommy': '湯米',
-    'Pascal': '帕斯卡（水獺）',
-    'Harriet': '哈莉（美髮師）',
-    'Redd': '雷德（狐狸商人）',
-    'Saharah': '沙哈拉（駱駝）',
-    'Luna': '露娜（貘）',
-    'Tortimer': '老市長（烏龜）',
-    'Lyle': '萊爾（水獺）',
-    'Bob': '波波（貓）',
-    'Fauna': '芙娜（鹿）',
-    'Curt': '科特（熊）',
-    'Portia': '波蒂亞（狗）',
-    'Leonardo': '雷納多（蜥蜴）',
-    'Cheri': '雪莉（松鼠）',
+// ═══════════════════════════════════════════════
+//  AmiiboAPI 圖片對應（啟動時從 API 抓取）
+// ═══════════════════════════════════════════════
+let amiiboApiData = [];   // 完整的 API 資料陣列
+let apiImageMap = {};     // { 正規化名稱 → imageUrl }
 
-    // ── Super Smash Bros ──
-    'Mario': '瑪利歐',
-    'Luigi': '路易吉',
-    'Peach': '碧姬公主',
-    'Daisy': '黛西公主',
-    'Rosalina _ Luma': '羅莎莉娜與琉璃',
-    'Bowser': '庫巴',
-    'Bowser Jr.': '小庫巴',
-    'Yoshi': '耀西',
-    'Birdo': '包包',
-    'Donkey Kong': '大金剛',
-    'Diddy Kong': '小金剛',
-    'Link': '林克',
-    'Toon Link': '卡通林克',
-    'Young Link': '小林克',
-    'Zelda': '薩爾達公主',
-    'Sheik': '謝克',
-    'Ganondorf': '加農多夫',
-    'Samus': '薩姆斯',
-    'Dark Samus': '黑暗薩姆斯',
-    'Zero Suit Samus': '戰鬥服薩姆斯',
-    'Fox': '飛狐',
-    'Falco': '法爾可',
-    'Wolf': '沃爾夫',
-    'Pikachu': '皮卡丘',
-    'Jigglypuff': '胖丁',
-    'Mewtwo': '超夢',
-    'Lucario': '路卡利歐',
-    'Charizard': '噴火龍',
-    'Greninja': '甲賀忍蛙',
-    'Squirtle': '傑尼龜',
-    'Ivysaur': '妙蛙草',
-    'Pokemon Trainer': '寶可夢訓練家',
-    'Pichu': '皮丘',
-    'Incineroar': '熾焰咆哮虎',
-    'Ness': '奈斯',
-    'Lucas': '路卡斯',
-    'Captain Falcon': '獵鷹隊長',
-    'Ice Climbers': '冰凍小子',
-    'Marth': '馬爾斯',
-    'Lucina': '露琪娜',
-    'Roy': '洛依',
-    'Chrom': '克倫',
-    'Ike': '艾克',
-    'Robin': '羅賓',
-    'Corrin (Player 1)': '科琳（女）',
-    'Corrin (Player 2)': '科琳（男）',
-    'Byleth': '拜雷斯',
-    'Kirby': '卡比',
-    'King Dedede': '帝帝帝大王',
-    'Meta Knight': '魅塔騎士',
-    'Pit': '皮特',
-    'Dark Pit': '黑暗皮特',
-    'Palutena': '帕露提娜女神',
-    'Wario': '壞利歐',
-    'Shulk': '夏爾克',
-    'Olimar': '皮克敏隊長奧力馬',
-    'Little Mac': '小麥',
-    'Villager': '村民',
-    'Isabelle (Smash)': '西施惠（格鬥）',
-    'Inkling Girl': '斯普拉頓女孩',
-    'King K. Rool': '大鱷魚王',
-    'Ridley': '里德利',
-    'Simon': '賽門',
-    'Richter': '里希特',
-    'Snake': '斯內克',
-    'Sonic': '音速小子',
-    'Ryu': '隆',
-    'Ken': '肯',
-    'Cloud (Player 1)': '克勞德（玩家1）',
-    'Cloud (Player 2)': '克勞德（玩家2）',
-    'Bayonetta (Player 1)': '貝姐（玩家1）',
-    'Bayonetta (Player 2)': '貝姐（玩家2）',
-    'Joker': '怪盜王',
-    'Hero': '勇者',
-    'Banjo _ Kazooie': '班卓與卡祖伊',
-    'Terry': '泰瑞',
-    'Byleth (Smash)': '拜雷斯（格鬥）',
-    'Min Min': '彈彈人',
-    'Steve': '史提夫',
-    'Alex': '亞歷克斯',
-    'Sephiroth': '薩菲羅斯',
-    'Pyra': '光輝',
-    'Mythra': '黑暗光輝',
-    'Kazuya': '一八（風間一八）',
-    'Sora': '索拉',
-    'Pac-Man': '小精靈',
-    'Mega Man': '洛克人',
-    'Mega Man (Golden)': '洛克人（黃金版）',
-    'Mii Fighter': 'Mii 格鬥家',
-    'Mii Gunner': 'Mii 射擊手',
-    'Mii Swordsman': 'Mii 劍士',
-    'Mr. Game _ Watch': '遊戲機器人',
-    'R.O.B. (Famicom)': 'R.O.B.（FC版）',
-    'R.O.B. (NES)': 'R.O.B.（NES版）',
-    'Duck Hunt': '打鴨遊戲（犬）',
-    'Wii Fit Trainer': 'Wii Fit 教練',
-    'Piranha Plant': '食人花',
-    'Dr. Mario': '醫生瑪利歐',
+async function loadAmiiboApi() {
+  const statusEl = document.getElementById('apiStatus');
+  try {
+    const res = await fetch('https://amiiboapi.com/api/amiibo/', { cache: 'force-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    amiiboApiData = json.amiibo || [];
 
-    // ── Legend of Zelda ──
-    '8-Bit Link': '8位元林克',
-    'Link (Majora_s Mask)': '林克（魔吉拉的面具）',
-    'Link (Ocarina Of Time)': '林克（時之笛）',
-    'Link (Skyward Sword)': '林克（天空之劍）',
-    'Link (Twilight Princess)': '林克（黃昏公主）',
-    'Link (Wind Waker)': '林克（風之律動）',
-    'Zelda (Wind Waker)': '薩爾達（風之律動）',
-    'Bokoblin': '波克布林',
-    'Daruk': '達路克',
-    'Guardian': '守護者',
-    'Link (Archer)': '林克（弓箭手）',
-    'Link (Rider)': '林克（騎馬）',
-    'Mipha': '米法',
-    'Revali': '里巴爾',
-    'Urbosa': '烏爾波莎',
-    'Zelda (BotW)': '薩爾達（曠野之息）',
-    'Link (Link\'s Awakening)': '林克（夢見島）',
-    'Zelda _ Loftwing Amiibo': '薩爾達與天空鳥',
-    'Ganondorf (TotK)': '加農多夫（王國之淚）',
-    'Gerudo_King': '格路多王',
-    'Link (TotK)': '林克（王國之淚）',
-    'Princess_Zelda': '薩爾達公主',
-    'Zelda (TotK)': '薩爾達（王國之淚）',
-    'Wolf Link': '狼林克',
-    '[MOD _ MAX LEVEL] Wolf Link': '狼林克（滿等MOD）',
-
-    // ── Kirby ──
-    'Kirby (Kirby)': '卡比（星之卡比）',
-    'King Dedede (Kirby)': '帝帝帝大王（星之卡比）',
-    'Meta Knight (Kirby)': '魅塔騎士（星之卡比）',
-    'Waddle Dee': '瓦豆迪',
-
-    // ── Splatoon ──
-    'Inkling Boy': '斯普拉頓男孩',
-    'Inkling Girl (Splatoon)': '斯普拉頓女孩',
-    'Inkling Squid': '斯普拉頓魷魚',
-    'Callie': '愛麗',
-    'Marie': '瑪麗',
-    'Pearl': '珍珠',
-    'Marina': '美娜',
-    'Octoling Boy': '章魚男孩',
-    'Octoling Girl': '章魚女孩',
-    'Octoling Octopus': '章魚',
-
-    // ── Metroid ──
-    'Samus (Metroid)': '薩姆斯（密特羅德）',
-    'Metroid': '密特羅德',
-
-    // ── Fire Emblem ──
-    'Alm': '阿爾姆',
-    'Celica': '塞利卡',
-    'Eirika': '依莉卡',
-    'Ephraim': '愛非拉姆',
-    'Veronica': '薇洛妮卡',
-    'Fjorm': '芙尤拉',
-
-    // ── Super Mario ──
-    'Mario (SM)': '瑪利歐（超級瑪利歐）',
-    'Luigi (SM)': '路易吉（超級瑪利歐）',
-    'Peach (SM)': '碧姬（超級瑪利歐）',
-    'Toad': '奇諾比奧',
-    'Waluigi': '壞路易',
-    'Boo': '膽小鬼幽靈',
-    'Goomba': '栗寶寶',
-    'Koopa Troopa': '庫巴兵',
-    'Chain Chomp': '鐵球咬咬',
-    'Bullet Bill': '砲彈Bill',
-
-    // ── Pikmin ──
-    'Pikmin _ Olimar': '皮克敏與奧力馬',
-
-    // ── Xenoblade ──
-    'Shulk (Xenoblade)': '夏爾克（異域神劍）',
-    'Noah': '諾亞（異域神劍3）',
-    'Mio': '美緒（異域神劍3）',
-
-    // ── Pokken Tournament ──
-    'Shadow Mewtwo': '暗影超夢',
-
-    // ── Monster Hunter ──
-    'Rathalos': '雷狼龍',
-
-    // ── Shovel Knight ──
-    'Shovel Knight': '鏟子騎士',
-
-    // ── Dark Souls ──
-    'Solaire of Astora': '太陽戰士索拉爾',
-
-    // ── Diablo ──
-    'Lord of Terror': '恐怖之王',
-
-    // ── BoxBoy ──
-    'Qbby': '方方',
-
-    // ── Chibi-Robo ──
-    'Chibi-Robo': '小機器人',
-
-    // ── Mega Man ──
-    'Mega Man (Series)': '洛克人（系列）',
-
-    // ── Yu-Gi-Oh ──
-    'Yuga Ohdo': '王道遊我',
-    'Roa Kirishima': '霧島蓮',
-    'Romin Kirishima': '霧島露明',
-    'Gakuto Sōgetsu': '蒼月学人',
-    'Asana Mutsuba': '六葉阿沙奈',
-    'Nail Saionji': '最勝院奈依魯',
-    'Tatsuhisa "Luke" Kamijō': '上城龍久（路克）',
-
-    // ── Yoshi ──
-    'Green Yarn Yoshi': '毛線耀西（綠）',
-    'Light-Blue Yarn Yoshi': '毛線耀西（淺藍）',
-    'Pink Yarn Yoshi': '毛線耀西（粉）',
-    'Mega Yarn Yoshi': '巨大毛線耀西',
-    'Poochy': '布奇（狗狗）',
-
-    // ── Power Pros ──
-    // ── Skylanders ──
-    // ── PowerUpBands ──
-    // ── Kelloggs ──
-
-    // ── 通用 Essential Files ──
-    'ally-all-in-839': '通用金鑰（全839）',
-    'key_retail': '零售金鑰',
-    'locked-secret': '鎖定密鑰',
-    'unfixed-info': '未修正資訊',
-  };
-
-  // 分類表情符號
-  const CATEGORY_ICONS = {
-    'Animal Crossing Amiibo': '🏝️',
-    'Super Smash Bros Amiibo': '🥊',
-    'The Legend of Zelda Amiibo': '🗡️',
-    'Super Mario Amiibo': '🍄',
-    'Kirby Amiibo': '⭐',
-    'Splatoon Amiibo': '🦑',
-    'Metroid Amiibo': '👾',
-    'Fire Emblem Amiibo': '🔥',
-    'Xenoblade Chronicles': '⚔️',
-    'Pokemon': '🎮',
-    'Monster Hunter Amiibo': '🐉',
-    'Shovel Knight Amiibo': '⛏️',
-    'Pikmin Amiibo': '🌱',
-    'Mega Man Amiibo': '🤖',
-    "Yoshi's Wooly World Amiibo": '🧶',
-    'Dark Souls Amiibo': '💀',
-    'Diablo Amiibo': '👿',
-    'BoxBoy! Amiibo': '📦',
-    'Chibi-Robo! Amiibo': '🤖',
-    'Kellogs Amiibo': '🌟',
-    'Skylanders Amiibo': '🌈',
-    'Power Pros Amiibo': '⚾',
-    'PowerUpBands': '🎡',
-    'Mario Sports Superstars Amiibo': '🏆',
-    'Detective Pikachu Amiibo': '🔍',
-    "Pokkén Tournament Amiibo": '🥊',
-    'Yu-Gi-Oh! Amiibo': '🃏',
-    '!Essential Files': '🔑',
-  };
-
-  // ═══════════════════════════════════════════════════════
-  //  狀態
-  // ═══════════════════════════════════════════════════════
-  let allFiles = [];        // { file: File, path: string, name: string }[]
-  let selectedFile = null;
-  let currentCategory = null;
-  let currentSubcategory = null;
-  let searchQuery = '';
-
-  // ═══════════════════════════════════════════════════════
-  //  DOM 參照
-  // ═══════════════════════════════════════════════════════
-  const categoryTree    = document.getElementById('categoryTree');
-  const characterGrid   = document.getElementById('characterGrid');
-  const breadcrumb      = document.getElementById('breadcrumb');
-  const selectedFileName = document.getElementById('selectedFileName');
-  const selectedFilePath = document.getElementById('selectedFilePath');
-  const sendBtn         = document.getElementById('sendBtn');
-  const logBar          = document.getElementById('logBar');
-  const searchInput     = document.getElementById('searchInput');
-  const manualFileInput = document.getElementById('manualFileInput');
-  const folderInput     = document.getElementById('folderInput');
-
-  // ═══════════════════════════════════════════════════════
-  //  開啟資料夾（webkitdirectory）
-  // ═══════════════════════════════════════════════════════
-  document.getElementById('openFolderBtn').onclick = () => folderInput.click();
-
-  folderInput.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files);
-    const binFiles = files.filter(f => f.name.endsWith('.bin'));
-    if (binFiles.length === 0) {
-      setLog('未在選擇的資料夾中找到 .bin 檔案', 'error');
-      return;
-    }
-    allFiles = binFiles.map(f => ({
-      file: f,
-      // webkitRelativePath 格式：「資料夾名/子資料夾/檔案.bin」
-      path: f.webkitRelativePath || f.name,
-      name: f.name.replace('.bin', ''),
-    }));
-    setLog(`已載入 ${allFiles.length} 個 .bin 檔案`, 'ok');
-    buildCategoryTree();
-    renderGrid();
-  });
-
-  // ═══════════════════════════════════════════════════════
-  //  手動選取單一 .bin
-  // ═══════════════════════════════════════════════════════
-  document.getElementById('manualPickBtn').onclick = () => manualFileInput.click();
-
-  manualFileInput.addEventListener('change', (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    selectFile({ file: f, path: f.name, name: f.name.replace('.bin', '') });
-  });
-
-  // ═══════════════════════════════════════════════════════
-  //  搜尋
-  // ═══════════════════════════════════════════════════════
-  searchInput.addEventListener('input', () => {
-    searchQuery = searchInput.value.trim().toLowerCase();
-    renderGrid();
-  });
-
-  // ═══════════════════════════════════════════════════════
-  //  建立左側分類樹
-  // ═══════════════════════════════════════════════════════
-  function buildCategoryTree() {
-    // 從 path 解析分類結構
-    // 路徑格式：「Amiibo-main 2/Amiibo Bin/系列/子分類/檔案.bin」
-    const tree = {}; // { 系列: { 子分類: [檔案] } }
-
-    for (const f of allFiles) {
-      const parts = f.path.split('/');
-      // 找到 'Amiibo Bin' 的位置
-      const binIdx = parts.findIndex(p => p === 'Amiibo Bin');
-      if (binIdx === -1) {
-        // 無法識別路徑，放到根分類
-        const cat = '未分類';
-        if (!tree[cat]) tree[cat] = { '全部': [] };
-        tree[cat]['全部'].push(f);
-        continue;
-      }
-      const afterBin = parts.slice(binIdx + 1);
-      const category = afterBin[0] || '根目錄';
-      const subcategory = afterBin.length > 2 ? afterBin[1] : '全部';
-
-      if (!tree[category]) tree[category] = {};
-      if (!tree[category][subcategory]) tree[category][subcategory] = [];
-      tree[category][subcategory].push(f);
+    // 建立名稱 → 圖片 的映射（小寫 key，方便模糊比對）
+    for (const a of amiiboApiData) {
+      const key = normKey(a.name);
+      if (!apiImageMap[key]) apiImageMap[key] = a.image;
+      // 也用 character 建索引
+      const ckey = normKey(a.character);
+      if (!apiImageMap[ckey]) apiImageMap[ckey] = a.image;
     }
 
-    // 儲存樹狀結構供後續使用
-    window._amiiboTree = tree;
+    statusEl.textContent = `✅ 已載入 ${amiiboApiData.length} 筆圖片`;
+    statusEl.className = 'api-status ok';
+    // 若格線已顯示，刷新一次讓圖片補上
+    if (window._amiiboTree) renderGrid();
+  } catch (e) {
+    statusEl.textContent = '⚠️ 圖片 API 離線，改用 emoji';
+    statusEl.className = 'api-status error';
+  }
+}
 
-    // 渲染 DOM
-    categoryTree.innerHTML = '';
+function normKey(s) {
+  return (s || '').toLowerCase()
+    .replace(/[^a-z0-9]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-    // 加一個「全部」選項
-    const allItem = document.createElement('div');
-    allItem.className = 'category-header';
-    allItem.innerHTML = `<span class="icon">🎮</span> 全部（${allFiles.length}）`;
-    allItem.onclick = () => {
-      currentCategory = null;
-      currentSubcategory = null;
-      document.querySelectorAll('.category-header').forEach(el => el.classList.remove('active'));
-      allItem.classList.add('active');
-      breadcrumb.textContent = '全部系列';
-      renderGrid();
-    };
-    categoryTree.appendChild(allItem);
+/** 從檔名找最匹配的 API 圖片 URL */
+function getApiImage(fileName) {
+  if (!amiiboApiData.length) return null;
+  const key = normKey(fileName);
+  // 1. 完全匹配
+  if (apiImageMap[key]) return apiImageMap[key];
+  // 2. API 資料逐筆比對：用名稱包含
+  const parts = key.split(' ').filter(Boolean);
+  let best = null, bestScore = 0;
+  for (const a of amiiboApiData) {
+    const akey = normKey(a.name);
+    const ckey = normKey(a.character);
+    // 計算共同 token 數
+    const score = parts.filter(p => akey.includes(p) || ckey.includes(p)).length;
+    if (score > bestScore && score >= Math.max(1, Math.floor(parts.length * 0.6))) {
+      bestScore = score;
+      best = a.image;
+    }
+  }
+  return best;
+}
 
-    for (const [cat, subs] of Object.entries(tree)) {
-      const item = document.createElement('div');
-      item.className = 'category-item';
+// ═══════════════════════════════════════════════
+//  中文對照表
+// ═══════════════════════════════════════════════
+const ZH_NAMES = {
+  'Blathers':'布魯托斯','Celeste':'星星','Cyrrus':'西路斯','Digby':'迪比',
+  'Isabelle':'西施惠','K.K. Slider':'K.K.滑手','Kapp_n':'卡帕','Kicks':'斯哥',
+  'Lottie':'蘿蒂','Mabel':'美貝','Reese':'莉茲','Resetti':'雷賽蒂',
+  'Rover':'羅瓦爾','Summertime Isabelle':'夏日西施惠','Timmy _ Tommy':'提米和湯米',
+  'Tom Nook':'狸克',
+  'Mario':'瑪利歐','Luigi':'路易吉','Peach':'碧姬公主','Daisy':'黛西公主',
+  'Rosalina _ Luma':'羅莎莉娜與琉璃','Bowser':'庫巴','Bowser Jr.':'小庫巴',
+  'Yoshi':'耀西','Donkey Kong':'大金剛','Diddy Kong':'小金剛',
+  'Link':'林克','Toon Link':'卡通林克','Young Link':'小林克',
+  'Zelda':'薩爾達公主','Sheik':'謝克','Ganondorf':'加農多夫',
+  'Samus':'薩姆斯','Dark Samus':'黑暗薩姆斯','Zero Suit Samus':'戰鬥服薩姆斯',
+  'Fox':'飛狐','Falco':'法爾可','Wolf':'沃爾夫',
+  'Pikachu':'皮卡丘','Jigglypuff':'胖丁','Mewtwo':'超夢',
+  'Lucario':'路卡利歐','Charizard':'噴火龍','Greninja':'甲賀忍蛙',
+  'Squirtle':'傑尼龜','Ivysaur':'妙蛙草','Pokemon Trainer':'寶可夢訓練家',
+  'Pichu':'皮丘','Incineroar':'熾焰咆哮虎',
+  'Ness':'奈斯','Lucas':'路卡斯','Captain Falcon':'獵鷹隊長',
+  'Ice Climbers':'冰凍小子','Marth':'馬爾斯','Lucina':'露琪娜',
+  'Roy':'洛依','Chrom':'克倫','Ike':'艾克','Robin':'羅賓',
+  'Corrin (Player 1)':'科琳（女）','Corrin (Player 2)':'科琳（男）','Byleth':'拜雷斯',
+  'Kirby':'卡比','King Dedede':'帝帝帝大王','Meta Knight':'魅塔騎士',
+  'Pit':'皮特','Dark Pit':'黑暗皮特','Palutena':'帕露提娜女神',
+  'Wario':'壞利歐','Shulk':'夏爾克','Olimar':'奧力馬',
+  'Little Mac':'小麥','Villager':'村民','Inkling Girl':'斯普拉頓女孩',
+  'King K. Rool':'大鱷魚王','Ridley':'里德利','Simon':'賽門','Richter':'里希特',
+  'Snake':'斯內克','Sonic':'音速小子','Ryu':'隆','Ken':'肯',
+  'Cloud (Player 1)':'克勞德（玩家1）','Cloud (Player 2)':'克勞德（玩家2）',
+  'Bayonetta (Player 1)':'貝姐（玩家1）','Bayonetta (Player 2)':'貝姐（玩家2）',
+  'Joker':'怪盜王','Hero':'勇者','Banjo _ Kazooie':'班卓與卡祖伊',
+  'Terry':'泰瑞','Min Min':'彈彈人','Steve':'史提夫','Alex':'亞歷克斯',
+  'Sephiroth':'薩菲羅斯','Pyra':'光輝','Mythra':'黑暗光輝',
+  'Kazuya':'風間一八','Sora':'索拉',
+  'Pac-Man':'小精靈','Mega Man':'洛克人','Mega Man (Golden)':'洛克人（黃金版）',
+  'Mii Fighter':'Mii 格鬥家','Mii Gunner':'Mii 射擊手','Mii Swordsman':'Mii 劍士',
+  'Mr. Game _ Watch':'遊戲機器人',
+  'R.O.B. (Famicom)':'R.O.B.（FC版）','R.O.B. (NES)':'R.O.B.（NES版）',
+  'Duck Hunt':'打鴨遊戲（犬）','Wii Fit Trainer':'Wii Fit 教練','Piranha Plant':'食人花',
+  'Dr. Mario':'醫生瑪利歐',
+  '8-Bit Link':'8位元林克','Bokoblin':'波克布林','Daruk':'達路克',
+  'Guardian':'守護者','Link (Archer)':'林克（弓箭手）','Link (Rider)':'林克（騎馬）',
+  'Mipha':'米法','Revali':'里巴爾','Urbosa':'烏爾波莎',
+  'Zelda _ Loftwing Amiibo':'薩爾達與天空鳥',
+  'Ganondorf (TotK)':'加農多夫（王國之淚）','Gerudo_King':'格路多王',
+  'Link (TotK)':'林克（王國之淚）','Princess_Zelda':'薩爾達公主',
+  'Zelda (TotK)':'薩爾達（王國之淚）',
+  'Wolf Link':'狼林克','[MOD _ MAX LEVEL] Wolf Link':'狼林克（滿等MOD）',
+  'Waddle Dee':'瓦豆迪',
+  'Inkling Boy':'斯普拉頓男孩','Inkling Squid':'斯普拉頓魷魚',
+  'Callie':'愛麗','Marie':'瑪麗','Pearl':'珍珠','Marina':'美娜',
+  'Octoling Boy':'章魚男孩','Octoling Girl':'章魚女孩','Octoling Octopus':'章魚',
+  'Alm':'阿爾姆','Celica':'塞利卡',
+  'Noah':'諾亞','Mio':'美緒',
+  'Green Yarn Yoshi':'毛線耀西（綠）','Light-Blue Yarn Yoshi':'毛線耀西（淺藍）',
+  'Pink Yarn Yoshi':'毛線耀西（粉）','Mega Yarn Yoshi':'巨大毛線耀西','Poochy':'布奇',
+  'Shovel Knight':'鏟子騎士',
+  'Solaire of Astora':'太陽戰士索拉爾',
+  'Yuga Ohdo':'王道遊我','Roa Kirishima':'霧島蓮','Romin Kirishima':'霧島露明',
+  'Gakuto Sōgetsu':'蒼月学人','Asana Mutsuba':'六葉阿沙奈',
+  'Nail Saionji':'最勝院奈依魯','Tatsuhisa "Luke" Kamijō':'上城龍久',
+  'ally-all-in-839':'通用金鑰（全839）','key_retail':'零售金鑰',
+  'locked-secret':'鎖定密鑰','unfixed-info':'未修正資訊',
+};
 
-      const totalInCat = Object.values(subs).flat().length;
-      const icon = CATEGORY_ICONS[cat] || '📁';
-      const header = document.createElement('div');
-      header.className = 'category-header';
-      header.innerHTML = `
-        <span class="icon">${icon}</span>
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat.replace(/ Amiibo$/,'')}</span>
-        <span style="font-size:10px;color:#555;flex-shrink:0">${totalInCat}</span>
-        <span class="caret">▶</span>
-      `;
+const CATEGORY_ICONS = {
+  'Animal Crossing Amiibo':'🏝️','Super Smash Bros Amiibo':'🥊',
+  'The Legend of Zelda Amiibo':'🗡️','Super Mario Amiibo':'🍄',
+  'Kirby Amiibo':'⭐','Splatoon Amiibo':'🦑','Metroid Amiibo':'👾',
+  'Fire Emblem Amiibo':'🔥','Xenoblade Chronicles':'⚔️',
+  'Monster Hunter Amiibo':'🐉','Shovel Knight Amiibo':'⛏️',
+  'Pikmin Amiibo':'🌱','Mega Man Amiibo':'🤖',
+  "Yoshi's Wooly World Amiibo":'🧶','Dark Souls Amiibo':'💀',
+  'Diablo Amiibo':'👿','BoxBoy! Amiibo':'📦','Chibi-Robo! Amiibo':'🤖',
+  'Mario Sports Superstars Amiibo':'🏆','Detective Pikachu Amiibo':'🔍',
+  "Pokkén Tournament Amiibo":'🥊','Yu-Gi-Oh! Amiibo':'🃏',
+  '!Essential Files':'🔑','Kellogs Amiibo':'🌟','Skylanders Amiibo':'🌈',
+  'Power Pros Amiibo':'⚾','PowerUpBands':'🎡',
+};
 
-      const subList = document.createElement('div');
-      subList.className = 'subcategory-list';
+function getEmojiFallback(name) {
+  const n = name.toLowerCase();
+  if (n.match(/mario|luigi|peach|toad|bowser/)) return '🍄';
+  if (n.match(/link|zelda|ganon/)) return '🗡️';
+  if (n.match(/pikachu|pokemon|charizard|mewtwo|greninja/)) return '⚡';
+  if (n.match(/kirby|dedede|meta knight/)) return '⭐';
+  if (n.match(/samus|metroid/)) return '🚀';
+  if (n.match(/fox|falco|wolf/)) return '🦊';
+  if (n.match(/donkey kong|diddy/)) return '🦍';
+  if (n.match(/inkling|splatoon|octoling/)) return '🦑';
+  if (n.match(/sonic/)) return '💨';
+  if (n.match(/mega man/)) return '🤖';
+  if (n.match(/isabelle|tom nook|k\.k/)) return '🏝️';
+  if (n.match(/yoshi/)) return '🥚';
+  if (n.match(/key|secret|essential/)) return '🔑';
+  if (n.match(/yu.gi|yugi/)) return '🃏';
+  return '🎮';
+}
 
-      const subKeys = Object.keys(subs);
+// ═══════════════════════════════════════════════
+//  狀態
+// ═══════════════════════════════════════════════
+let allFiles = [];
+let selectedFile = null;
+let currentCategory = null;
+let currentSubcategory = null;
+let searchQuery = '';
 
-      // 有多個子分類才顯示子列表
-      if (subKeys.length > 1 || (subKeys.length === 1 && subKeys[0] !== '全部')) {
-        // 點標題展開/收起
-        header.onclick = () => {
-          const isOpen = subList.classList.toggle('open');
-          header.classList.toggle('open', isOpen);
-          if (isOpen) {
-            currentCategory = cat;
-            currentSubcategory = null;
-            document.querySelectorAll('.category-header').forEach(el => el.classList.remove('active'));
-            header.classList.add('active', 'open');
-            breadcrumb.textContent = cat;
-            renderGrid();
-          }
-        };
+const categoryTree    = document.getElementById('categoryTree');
+const characterGrid   = document.getElementById('characterGrid');
+const breadcrumb      = document.getElementById('breadcrumb');
+const selectedFileName = document.getElementById('selectedFileName');
+const selectedFilePath = document.getElementById('selectedFilePath');
+const selectedPreview  = document.getElementById('selectedPreview');
+const sendBtn         = document.getElementById('sendBtn');
+const logBar          = document.getElementById('logBar');
+const searchInput     = document.getElementById('searchInput');
+const manualFileInput = document.getElementById('manualFileInput');
+const folderInput     = document.getElementById('folderInput');
 
-        for (const [sub, files] of Object.entries(subs)) {
-          const subItem = document.createElement('div');
-          subItem.className = 'subcategory-item';
-          subItem.innerHTML = `📁 ${sub} <span style="margin-left:auto;font-size:10px;color:#555">${files.length}</span>`;
-          subItem.onclick = (e) => {
-            e.stopPropagation();
-            document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('selected'));
-            subItem.classList.add('selected');
-            currentCategory = cat;
-            currentSubcategory = sub;
-            breadcrumb.textContent = `${cat} › ${sub}`;
-            renderGrid();
-          };
-          subList.appendChild(subItem);
-        }
-      } else {
-        // 單層分類，直接點
-        header.onclick = () => {
-          document.querySelectorAll('.category-header').forEach(el => el.classList.remove('active'));
+// 啟動時立即抓 API
+loadAmiiboApi();
+
+// ═══════════════════════════════════════════════
+//  開啟資料夾
+// ═══════════════════════════════════════════════
+document.getElementById('openFolderBtn').onclick = () => folderInput.click();
+
+folderInput.addEventListener('change', (e) => {
+  const files = Array.from(e.target.files).filter(f => f.name.endsWith('.bin'));
+  if (!files.length) { setLog('未找到 .bin 檔案', 'error'); return; }
+  allFiles = files.map(f => ({
+    file: f,
+    path: f.webkitRelativePath || f.name,
+    name: f.name.replace('.bin', ''),
+  }));
+  setLog(`已載入 ${allFiles.length} 個 .bin 檔案`, 'ok');
+  buildCategoryTree();
+  renderGrid();
+});
+
+// ═══════════════════════════════════════════════
+//  手動選單一檔案
+// ═══════════════════════════════════════════════
+document.getElementById('manualPickBtn').onclick = () => manualFileInput.click();
+manualFileInput.addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  selectFile({ file: f, path: f.name, name: f.name.replace('.bin', '') });
+});
+
+// ═══════════════════════════════════════════════
+//  搜尋
+// ═══════════════════════════════════════════════
+searchInput.addEventListener('input', () => {
+  searchQuery = searchInput.value.trim().toLowerCase();
+  renderGrid();
+});
+
+// ═══════════════════════════════════════════════
+//  建立分類樹
+// ═══════════════════════════════════════════════
+function buildCategoryTree() {
+  const tree = {};
+  for (const f of allFiles) {
+    const parts = f.path.split('/');
+    const binIdx = parts.findIndex(p => p === 'Amiibo Bin');
+    if (binIdx === -1) {
+      if (!tree['未分類']) tree['未分類'] = { '全部': [] };
+      tree['未分類']['全部'].push(f);
+      continue;
+    }
+    const after = parts.slice(binIdx + 1);
+    const cat = after[0] || '根目錄';
+    const sub = after.length > 2 ? after[1] : '全部';
+    if (!tree[cat]) tree[cat] = {};
+    if (!tree[cat][sub]) tree[cat][sub] = [];
+    tree[cat][sub].push(f);
+  }
+  window._amiiboTree = tree;
+
+  categoryTree.innerHTML = '';
+
+  // 全部
+  const allItem = document.createElement('div');
+  allItem.className = 'category-header';
+  allItem.innerHTML = `<span class="icon">🎮</span> <span style="flex:1">全部</span> <span style="font-size:10px;color:#555">${allFiles.length}</span>`;
+  allItem.onclick = () => {
+    setActive(allItem);
+    currentCategory = currentSubcategory = null;
+    breadcrumb.textContent = '全部系列';
+    renderGrid();
+  };
+  categoryTree.appendChild(allItem);
+
+  for (const [cat, subs] of Object.entries(tree)) {
+    const item = document.createElement('div');
+    item.className = 'category-item';
+    const total = Object.values(subs).flat().length;
+    const icon = CATEGORY_ICONS[cat] || '📁';
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.innerHTML = `
+      <span class="icon">${icon}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat.replace(/ Amiibo$/,'')}</span>
+      <span style="font-size:10px;color:#555;flex-shrink:0">${total}</span>
+      <span class="caret">▶</span>
+    `;
+    const subList = document.createElement('div');
+    subList.className = 'subcategory-list';
+    const subKeys = Object.keys(subs);
+
+    if (subKeys.length > 1 || (subKeys[0] && subKeys[0] !== '全部')) {
+      header.onclick = () => {
+        const isOpen = subList.classList.toggle('open');
+        header.classList.toggle('open', isOpen);
+        setActive(header);
+        currentCategory = cat; currentSubcategory = null;
+        breadcrumb.textContent = cat;
+        renderGrid();
+      };
+      for (const [sub, flist] of Object.entries(subs)) {
+        const si = document.createElement('div');
+        si.className = 'subcategory-item';
+        si.innerHTML = `📁 ${sub} <span style="margin-left:auto;font-size:10px;color:#555">${flist.length}</span>`;
+        si.onclick = (e) => {
+          e.stopPropagation();
           document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('selected'));
-          header.classList.add('active');
-          currentCategory = cat;
-          currentSubcategory = null;
-          breadcrumb.textContent = cat;
+          si.classList.add('selected');
+          currentCategory = cat; currentSubcategory = sub;
+          breadcrumb.textContent = `${cat} › ${sub}`;
           renderGrid();
         };
+        subList.appendChild(si);
       }
-
-      item.appendChild(header);
-      item.appendChild(subList);
-      categoryTree.appendChild(item);
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  渲染角色格線
-  // ═══════════════════════════════════════════════════════
-  function renderGrid() {
-    const tree = window._amiiboTree;
-
-    let files = [];
-
-    if (!tree) {
-      characterGrid.innerHTML = `<div class="empty-state">
-        <span class="big-icon">📂</span>
-        <p>點擊左側「開啟 Amiibo Bin 資料夾」</p>
-        <small>選擇包含 .bin 檔案的資料夾</small>
-      </div>`;
-      return;
-    }
-
-    if (currentCategory === null) {
-      files = allFiles;
-    } else if (currentSubcategory === null) {
-      files = Object.values(tree[currentCategory] || {}).flat();
     } else {
-      files = (tree[currentCategory] || {})[currentSubcategory] || [];
+      header.onclick = () => {
+        setActive(header);
+        currentCategory = cat; currentSubcategory = null;
+        breadcrumb.textContent = cat;
+        renderGrid();
+      };
     }
+    item.appendChild(header);
+    item.appendChild(subList);
+    categoryTree.appendChild(item);
+  }
+}
 
-    // 搜尋過濾
-    if (searchQuery) {
-      files = allFiles.filter(f => {
-        const zhName = getZhName(f.name).toLowerCase();
-        return f.name.toLowerCase().includes(searchQuery) || zhName.includes(searchQuery);
-      });
-      breadcrumb.textContent = `搜尋：${searchQuery}（${files.length} 筆）`;
-    }
+function setActive(el) {
+  document.querySelectorAll('.category-header').forEach(h => h.classList.remove('active'));
+  el.classList.add('active');
+}
 
-    if (files.length === 0) {
-      characterGrid.innerHTML = `<div class="empty-state">
-        <span class="big-icon">🔍</span>
-        <p>找不到符合的角色</p>
-      </div>`;
-      return;
-    }
-
-    // 在搜尋或全部模式下，依分類分組
-    if (!currentCategory || searchQuery) {
-      renderGrouped(files);
-    } else {
-      renderFlat(files);
-    }
+// ═══════════════════════════════════════════════
+//  渲染格線
+// ═══════════════════════════════════════════════
+function renderGrid() {
+  const tree = window._amiiboTree;
+  if (!tree) {
+    characterGrid.innerHTML = `<div class="empty-state"><span class="big-icon">📂</span><p>點擊左側「開啟 Amiibo Bin 資料夾」</p></div>`;
+    return;
   }
 
-  function renderGrouped(files) {
-    const tree = window._amiiboTree;
-    // 先整理出哪些分類包含這些檔案
-    const groups = {};
-    for (const f of files) {
-      const parts = f.path.split('/');
-      const binIdx = parts.findIndex(p => p === 'Amiibo Bin');
-      const cat = binIdx !== -1 ? (parts[binIdx + 1] || '根目錄') : '未分類';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(f);
-    }
+  let files = [];
+  if (currentCategory === null) files = allFiles;
+  else if (currentSubcategory === null) files = Object.values(tree[currentCategory] || {}).flat();
+  else files = (tree[currentCategory] || {})[currentSubcategory] || [];
 
-    let html = '';
-    for (const [cat, catFiles] of Object.entries(groups)) {
-      const icon = CATEGORY_ICONS[cat] || '📁';
-      html += `<div class="section-heading">${icon} ${cat.replace(/ Amiibo$/,'')}</div>`;
-      html += '<div class="grid">';
-      for (const f of catFiles) {
-        html += makeCard(f);
-      }
-      html += '</div>';
-    }
-    characterGrid.innerHTML = html;
-    attachCardEvents();
+  if (searchQuery) {
+    files = allFiles.filter(f => {
+      const zh = getZhName(f.name).toLowerCase();
+      return f.name.toLowerCase().includes(searchQuery) || zh.includes(searchQuery);
+    });
+    breadcrumb.textContent = `搜尋：${searchQuery}（${files.length} 筆）`;
   }
 
-  function renderFlat(files) {
-    let html = '<div class="grid">';
-    for (const f of files) {
-      html += makeCard(f);
-    }
+  if (!files.length) {
+    characterGrid.innerHTML = `<div class="empty-state"><span class="big-icon">🔍</span><p>找不到符合的角色</p></div>`;
+    return;
+  }
+
+  if (!currentCategory || searchQuery) {
+    renderGrouped(files);
+  } else {
+    renderFlat(files);
+  }
+}
+
+function renderGrouped(files) {
+  const groups = {};
+  for (const f of files) {
+    const parts = f.path.split('/');
+    const binIdx = parts.findIndex(p => p === 'Amiibo Bin');
+    const cat = binIdx !== -1 ? (parts[binIdx + 1] || '根目錄') : '未分類';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(f);
+  }
+  let html = '';
+  for (const [cat, cf] of Object.entries(groups)) {
+    const icon = CATEGORY_ICONS[cat] || '📁';
+    html += `<div class="section-heading">${icon} ${cat.replace(/ Amiibo$/,'')}</div><div class="grid">`;
+    for (const f of cf) html += makeCard(f);
     html += '</div>';
-    characterGrid.innerHTML = html;
-    attachCardEvents();
   }
+  characterGrid.innerHTML = html;
+  attachCardEvents();
+  lazyLoadImages();
+}
 
-  function makeCard(f) {
-    const zhName = getZhName(f.name);
-    const isSelected = selectedFile && selectedFile.path === f.path;
-    const emoji = getEmoji(f.name);
-    return `
-      <div class="char-card ${isSelected ? 'selected' : ''} has-file" data-path="${escapeAttr(f.path)}">
-        <span class="file-badge">.bin</span>
-        <span class="emoji">${emoji}</span>
-        <div class="name-en">${escapeHtml(f.name)}</div>
-        <div class="name-zh">${escapeHtml(zhName)}</div>
+function renderFlat(files) {
+  characterGrid.innerHTML = `<div class="grid">${files.map(makeCard).join('')}</div>`;
+  attachCardEvents();
+  lazyLoadImages();
+}
+
+function makeCard(f) {
+  const zhName = getZhName(f.name);
+  const isSelected = selectedFile && selectedFile.path === f.path;
+  const emoji = getEmojiFallback(f.name);
+  const safeId = CSS.escape(f.path);
+  return `
+    <div class="char-card ${isSelected ? 'selected' : ''}" data-path="${escAttr(f.path)}">
+      <span class="file-badge">.bin</span>
+      <div class="card-img-wrap" data-name="${escAttr(f.name)}">
+        <span class="card-img-placeholder">${emoji}</span>
+        <img class="card-img loading" src="" alt="${escAttr(f.name)}" data-name="${escAttr(f.name)}">
       </div>
-    `;
-  }
+      <div class="name-en">${escHtml(f.name)}</div>
+      <div class="name-zh">${escHtml(zhName)}</div>
+    </div>`;
+}
 
-  function attachCardEvents() {
-    document.querySelectorAll('.char-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const path = card.dataset.path;
-        const f = allFiles.find(x => x.path === path);
-        if (f) selectFile(f);
-      });
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  選擇檔案
-  // ═══════════════════════════════════════════════════════
-  function selectFile(f) {
-    selectedFile = f;
-    selectedFileName.textContent = f.name + '.bin';
-    selectedFilePath.textContent = f.path;
-    sendBtn.disabled = false;
-    setLog(`已選擇：${f.name}`, 'ok');
-    // 更新格線選中狀態
-    document.querySelectorAll('.char-card').forEach(card => {
-      card.classList.toggle('selected', card.dataset.path === f.path);
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════
-  //  BLE 傳送
-  // ═══════════════════════════════════════════════════════
-  const SERVICE_UUID = '0000ff10-0000-1000-8000-00805f9b34fb';
-  const WRITE_UUID   = '0000ff11-0000-1000-8000-00805f9b34fb';
-  const NOTIFY_UUID  = '0000ff12-0000-1000-8000-00805f9b34fb';
-
-  sendBtn.addEventListener('click', async () => {
-    if (!selectedFile) return;
-    sendBtn.disabled = true;
-
-    try {
-      setLog('正在搜尋 omllbolink 裝置…', 'busy');
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [{ namePrefix: 'omllbo' }],
-        optionalServices: [SERVICE_UUID]
-      });
-
-      setLog('連線中…', 'busy');
-      const server = await device.gatt.connect();
-      const service = await server.getPrimaryService(SERVICE_UUID);
-      const writeChar = await service.getCharacteristic(WRITE_UUID);
-      const notifyChar = await service.getCharacteristic(NOTIFY_UUID);
-
-      await notifyChar.startNotifications();
-      notifyChar.addEventListener('characteristicvaluechanged', (e) => {
-        const bytes = new Uint8Array(e.target.value.buffer);
-        const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
-        setLog('裝置回應: ' + hex, 'ok');
-      });
-
-      const buffer = await selectedFile.file.arrayBuffer();
-      const data = new Uint8Array(buffer);
-      setLog(`開始傳送「${selectedFile.name}」，共 ${data.length} bytes…`, 'busy');
-
-      for (let i = 0; i < data.length; i += 20) {
-        const chunk = data.slice(i, i + 20);
-        await writeChar.writeValueWithoutResponse(chunk);
-        await new Promise(r => setTimeout(r, 30));
+// ═══════════════════════════════════════════════
+//  延遲載入圖片（IntersectionObserver）
+// ═══════════════════════════════════════════════
+let observer;
+function lazyLoadImages() {
+  if (observer) observer.disconnect();
+  observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const img = entry.target;
+      if (img.dataset.loaded) continue;
+      const name = img.dataset.name;
+      const url = getApiImage(name);
+      if (url) {
+        img.onload = () => {
+          img.classList.remove('loading');
+          // 隱藏 emoji placeholder
+          const placeholder = img.previousElementSibling;
+          if (placeholder) placeholder.style.display = 'none';
+          img.dataset.loaded = '1';
+        };
+        img.onerror = () => img.classList.remove('loading');
+        img.src = url;
+      } else {
+        img.classList.remove('loading');
+        img.dataset.loaded = '1';
       }
-
-      setLog(`✅ 傳送完成！「${selectedFile.name}.bin」已成功寫入`, 'ok');
-    } catch (err) {
-      setLog('❌ 錯誤: ' + err.message, 'error');
-    } finally {
-      sendBtn.disabled = false;
+      observer.unobserve(img);
     }
+  }, { rootMargin: '100px' });
+
+  document.querySelectorAll('.card-img').forEach(img => observer.observe(img));
+}
+
+function attachCardEvents() {
+  document.querySelectorAll('.char-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const f = allFiles.find(x => x.path === card.dataset.path);
+      if (f) selectFile(f);
+    });
   });
+}
 
-  // ═══════════════════════════════════════════════════════
-  //  工具函式
-  // ═══════════════════════════════════════════════════════
-  function getZhName(name) {
-    // 直接比對
-    if (ZH_NAMES[name]) return ZH_NAMES[name];
-    // 去掉後綴再比對
-    const stripped = name.replace(/ \(.*\)$/, '').trim();
-    if (ZH_NAMES[stripped]) return ZH_NAMES[stripped];
-    return '—';
-  }
+// ═══════════════════════════════════════════════
+//  選擇檔案
+// ═══════════════════════════════════════════════
+function selectFile(f) {
+  selectedFile = f;
+  selectedFileName.textContent = f.name + '.bin';
+  selectedFilePath.textContent = f.path;
+  sendBtn.disabled = false;
+  setLog(`已選擇：${f.name}.bin`, 'ok');
 
-  function getEmoji(name) {
-    const n = name.toLowerCase();
-    if (n.includes('mario') || n.includes('luigi') || n.includes('peach') || n.includes('toad') || n.includes('bowser')) return '🍄';
-    if (n.includes('link') || n.includes('zelda') || n.includes('ganon')) return '🗡️';
-    if (n.includes('pikachu') || n.includes('pokemon') || n.includes('charizard') || n.includes('mewtwo')) return '⚡';
-    if (n.includes('kirby') || n.includes('dedede') || n.includes('meta knight')) return '⭐';
-    if (n.includes('samus') || n.includes('metroid')) return '🚀';
-    if (n.includes('fox') || n.includes('falco') || n.includes('wolf')) return '🦊';
-    if (n.includes('donkey kong') || n.includes('diddy')) return '🦍';
-    if (n.includes('splatoon') || n.includes('inkling') || n.includes('octoling')) return '🦑';
-    if (n.includes('fire emblem') || n.includes('marth') || n.includes('ike') || n.includes('lucina')) return '⚔️';
-    if (n.includes('sonic')) return '💨';
-    if (n.includes('mega man')) return '🤖';
-    if (n.includes('isabelle') || n.includes('tom nook') || n.includes('kk')) return '🏝️';
-    if (n.includes('yoshi')) return '🥚';
-    if (n.includes('wario') || n.includes('waluigi')) return '👿';
-    if (n.includes('key') || n.includes('secret') || n.includes('essential')) return '🔑';
-    if (n.includes('yu-gi') || n.includes('yugi')) return '🃏';
-    if (n.includes('xenoblade')) return '⚔️';
-    if (n.includes('pikmin')) return '🌱';
-    if (n.includes('dark souls') || n.includes('solaire')) return '☀️';
-    return '🎮';
+  // 更新底部預覽圖
+  const imgUrl = getApiImage(f.name);
+  if (imgUrl) {
+    selectedPreview.src = imgUrl;
+    selectedPreview.className = 'selected-preview show';
+  } else {
+    selectedPreview.className = 'selected-preview';
   }
 
-  function setLog(msg, kind = '') {
-    logBar.textContent = msg;
-    logBar.className = 'log-bar' + (kind ? ' ' + kind : '');
-  }
+  document.querySelectorAll('.char-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.path === f.path);
+  });
+}
 
-  function escapeHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// ═══════════════════════════════════════════════
+//  BLE 傳送
+// ═══════════════════════════════════════════════
+const SERVICE_UUID = '0000ff10-0000-1000-8000-00805f9b34fb';
+const WRITE_UUID   = '0000ff11-0000-1000-8000-00805f9b34fb';
+const NOTIFY_UUID  = '0000ff12-0000-1000-8000-00805f9b34fb';
+
+sendBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  sendBtn.disabled = true;
+  try {
+    setLog('正在搜尋 omllbolink 裝置…', 'busy');
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: 'omllbo' }],
+      optionalServices: [SERVICE_UUID]
+    });
+    setLog('連線中…', 'busy');
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    const writeChar = await service.getCharacteristic(WRITE_UUID);
+    const notifyChar = await service.getCharacteristic(NOTIFY_UUID);
+    await notifyChar.startNotifications();
+    notifyChar.addEventListener('characteristicvaluechanged', (e) => {
+      const hex = Array.from(new Uint8Array(e.target.value.buffer))
+        .map(b => b.toString(16).padStart(2,'0')).join(' ');
+      setLog('裝置回應: ' + hex, 'ok');
+    });
+    const data = new Uint8Array(await selectedFile.file.arrayBuffer());
+    setLog(`傳送中「${selectedFile.name}」(${data.length} bytes)…`, 'busy');
+    for (let i = 0; i < data.length; i += 20) {
+      await writeChar.writeValueWithoutResponse(data.slice(i, i + 20));
+      await new Promise(r => setTimeout(r, 30));
+    }
+    setLog(`✅ 傳送完成！「${selectedFile.name}.bin」已成功寫入`, 'ok');
+  } catch (err) {
+    setLog('❌ 錯誤: ' + err.message, 'error');
+  } finally {
+    sendBtn.disabled = false;
   }
-  function escapeAttr(s) {
-    return s.replace(/"/g,'&quot;');
-  }
+});
+
+// ═══════════════════════════════════════════════
+//  工具函式
+// ═══════════════════════════════════════════════
+function getZhName(name) {
+  if (ZH_NAMES[name]) return ZH_NAMES[name];
+  const stripped = name.replace(/ \(.*\)$/, '').trim();
+  return ZH_NAMES[stripped] || '—';
+}
+function setLog(msg, kind = '') {
+  logBar.textContent = msg;
+  logBar.className = 'log-bar' + (kind ? ' ' + kind : '');
+}
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return s.replace(/"/g,'&quot;'); }
 </script>
-
 </body>
 </html>
