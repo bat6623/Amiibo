@@ -508,6 +508,23 @@ header{
 }
 
 /* ══ Toast ══ */
+.eco-toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center;justify-content:center;line-height:1.45}
+/* ══ 裝置設定彈窗 ══ */
+.dm-box{max-width:440px;margin:0 auto}
+.dm-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 8px;font-size:13px;line-height:1.6;color:var(--text-body)}
+.dm-note{background:var(--mint-light);padding:12px 14px;border-radius:12px;border:1px solid var(--border-sub);color:var(--text-title)}
+.dm-note b{color:var(--forest-dark)}
+.dm-note p,.dm-tips p{margin:4px 0 0}
+.dm-btns{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.dm-btn{width:100%;min-height:44px;padding:10px 14px;border-radius:12px;border:1px solid var(--border-sub);background:#fff;color:var(--text-title);font-size:14px;font-weight:650;text-align:center;cursor:pointer;touch-action:manipulation;white-space:normal}
+.dm-btn.primary{background:var(--forest-dark);border-color:var(--forest-dark);color:#fff}
+.dm-btn:active{opacity:.75}
+.dm-btn:disabled{opacity:.4;cursor:not-allowed}
+.dm-tips{margin-top:16px;font-size:12px;line-height:1.55}
+.dm-log-head{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.dm-mini-btn{border:1px solid var(--border-sub);background:#fff;border-radius:8px;padding:4px 12px;font-size:12px;color:var(--text-title);cursor:pointer}
+.dm-log{margin:6px 0 0;max-height:180px;overflow:auto;background:#f4f6f5;border-radius:10px;padding:10px;font-size:11px;line-height:1.5;font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all;color:var(--text-title)}
+.dm-version{margin:12px 0 4px;text-align:center;font-size:11px;opacity:.7}
 .eco-toast{
   position:fixed;
   top:calc(18px + var(--safe-top));
@@ -845,36 +862,35 @@ header{
 
 <!-- 設備模式與 2115-0178 修復彈窗 -->
 <div class="drawer-backdrop" id="deviceModalBackdrop">
-  <div class="drawer-box" style="max-width:440px;">
+  <div class="drawer-box dm-box">
     <div class="drawer-pill-handle"></div>
     <div class="drawer-title-row">
-      <h3 style="font-size:16px;display:flex;align-items:center;gap:6px;">⚙️ 設備設定與 2115-0178 修復</h3>
+      <h3>⚙️ 裝置設定</h3>
       <button class="drawer-close" id="deviceModalCloseBtn">✕</button>
     </div>
-    <div style="padding:16px 20px 24px;font-size:13px;line-height:1.6;color:var(--text-sec);">
-      <div style="background:rgba(43,107,75,0.08);padding:12px 14px;border-radius:12px;margin-bottom:14px;border:1px solid rgba(43,107,75,0.2);color:var(--text-pri);">
-        <b style="color:var(--primary);">💡 關於 Switch 錯誤 2115-0178：</b><br>
-        1. 裝置在「無限模式」會自己改 UID，可能導致 Switch 報錯。<br>
-        2. 沒開「無限刷」時，寫入前會自動切回文件模式；也可以在這裡手動切換。
+    <div class="dm-body">
+      <div class="dm-note">
+        <b>💡 Switch 顯示 2115-0178？</b>
+        <p>裝置在「無限模式」會自己改 UID，可能導致讀取失敗。沒開「無限刷」時，寫入前會自動切回文件模式，也可以在這裡手動切換。</p>
       </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <button class="capsule-action-btn" id="setSequentialModeBtn" style="width:100%;height:40px;justify-content:center;background:var(--primary);color:#fff;">
-          🔒 切換為文件模式（保留原 UID，推薦）
-        </button>
-        <button class="h-btn" id="setAutoRandomModeBtn" style="width:100%;height:38px;justify-content:center;border:1px solid var(--border);">
-          🎲 切換為自動隨機模式 (Auto Random)
-        </button>
-        <button class="h-btn" id="setManualRandomModeBtn" style="width:100%;height:38px;justify-content:center;border:1px solid var(--border);">
-          🔘 切換為手動隨機模式 (Manual Random)
-        </button>
+      <div class="dm-btns">
+        <button class="dm-btn primary" id="setSequentialModeBtn">🔒 文件模式（保留原 UID，推薦）</button>
+        <button class="dm-btn" id="setAutoRandomModeBtn">🎲 自動無限模式</button>
+        <button class="dm-btn" id="setManualRandomModeBtn">🔘 手動無限模式</button>
       </div>
-      <div style="margin-top:16px;font-size:12px;color:var(--text-sec);line-height:1.5;">
-        <b>Switch 讀取操作訣竅：</b><br>
-        • 寫入時每一步都會等裝置確認，沒收到確認會直接停止並顯示原因。<br>• 寫入完成後，本網頁會<b>自動中斷藍牙連線</b>。<br>
-        • 若設備上有實體小按鍵，請按一下喚醒 NFC 發射狀態。<br>
-        • 平貼在 Switch 右搖桿頂部感應區 1~2 秒即可成功辨識。
+      <div class="dm-tips">
+        <b>讀取訣竅</b>
+        <p>• 寫入時每一步都會等裝置確認，沒收到確認會停止並顯示原因。</p>
+        <p>• 寫入完成後會自動中斷藍牙。</p>
+        <p>• 裝置有實體按鍵的話，按一下喚醒後再貼近 Switch。</p>
+        <p>• 平貼在 Switch 右搖桿頂部感應區 1～2 秒。</p>
       </div>
-      <div id="appVersionLabel" style="margin-top:14px;text-align:center;font-size:11px;color:var(--text-sec);opacity:.7;"></div>
+      <div class="dm-log-head">
+        <b>傳輸紀錄</b>
+        <button class="dm-mini-btn" id="copyBleLogBtn">複製</button>
+      </div>
+      <pre class="dm-log" id="bleLogBox">尚無紀錄</pre>
+      <div class="dm-version" id="appVersionLabel"></div>
     </div>
   </div>
 </div>
@@ -886,7 +902,7 @@ header{
 
 <script>
 // ─── 版號：每次修改都要更新（用來確認手機讀到的是不是最新版） ───
-const APP_VERSION = 'v1.1.0';
+const APP_VERSION = 'v1.2.0';
 const APP_BUILD_DATE = '2026-11-17';
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('appVersionLabel');
@@ -1700,33 +1716,63 @@ function parseDeviceInfo(p){
   return { version: String.fromCharCode(...p.slice(3, 3 + vl)), mode: p[4 + vl] };
 }
 
+// ─── 傳輸紀錄（存在本機，方便回報問題） ───
+let bleLog = [];
+try { bleLog = JSON.parse(localStorage.getItem('ble_log') || '[]'); } catch(e) {}
+function logBle(msg){
+  const t = new Date();
+  const line = `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')} ${msg}`;
+  bleLog.push(line);
+  if (bleLog.length > 200) bleLog = bleLog.slice(-200);
+  try { localStorage.setItem('ble_log', JSON.stringify(bleLog)); } catch(e) {}
+  console.log('[BLE]', msg);
+  renderBleLog();
+}
+function renderBleLog(){
+  const box = document.getElementById('bleLogBox');
+  if (!box) return;
+  box.textContent = bleLog.length ? bleLog.join('\n') : '尚無紀錄';
+  box.scrollTop = box.scrollHeight;
+}
+
+// 目前的藍牙連線：還連著就直接沿用，不用重新選裝置
+let activeConn = null;
+
 /** 連線、開啟回覆通知、辨識新舊協定 */
 async function connectAmiiboDevice(){
+  if (activeConn && activeConn.device.gatt.connected) {
+    logBle('沿用現有連線 ' + (activeConn.device.name || ''));
+    return activeConn;
+  }
   if (!navigator.bluetooth) throw new Error('這個瀏覽器不支援藍牙（iPhone 請用 Bluefy，電腦請用 Chrome / Edge）');
+  logBle('— 開始連線（' + APP_VERSION + '）');
   const device = await navigator.bluetooth.requestDevice({
     filters: ['omllbo', 'amiibolink', 'AmiiboLink', 'amiibo', 'Amiibo', 'amiloop', 'allmiibo', 'ALLMIIBO'].map(namePrefix => ({ namePrefix })),
     optionalServices: KNOWN_SERVICES
   });
-  if (device.gatt.connected) device.gatt.disconnect();
-  const server = await device.gatt.connect();
+  logBle('選擇裝置 ' + (device.name || '(無名稱)'));
+  const server = await withTimeout(device.gatt.connect(), 10000, '藍牙連線逾時，請按一下裝置按鍵喚醒後重試');
 
-  let writeChar, notifyChar;
+  let writeChar, notifyChar, svcName;
   try {
     const svc = await server.getPrimaryService(NUS_SERVICE);
     writeChar = await svc.getCharacteristic(NUS_WRITE);
     notifyChar = await svc.getCharacteristic(NUS_NOTIFY);
+    svcName = 'NUS';
   } catch (e) {
     try {
       const svc = await server.getPrimaryService(FF10_SERVICE);
       writeChar = await svc.getCharacteristic('0000ff11-0000-1000-8000-00805f9b34fb');
       notifyChar = await svc.getCharacteristic('0000ff12-0000-1000-8000-00805f9b34fb');
+      svcName = 'FF10';
     } catch (err) {
       try { device.gatt.disconnect(); } catch(_){}
       throw new Error('找不到裝置的藍牙通道，這台裝置可能不支援');
     }
   }
   // 一定要能收到裝置回覆，否則無法確認每一步有寫進去
-  await notifyChar.startNotifications();
+  await withTimeout(notifyChar.startNotifications(), 8000, '無法開啟裝置回覆通知');
+  logBle(`通道 ${svcName}，可回覆寫入=${writeChar.properties.write}，無回覆寫入=${writeChar.properties.writeWithoutResponse}`);
 
   const conn = { device, writeChar, notifyChar, buffer: new Uint8Array(0), waiter: null, protocol: null, info: null };
   notifyChar.addEventListener('characteristicvaluechanged', e => {
@@ -1737,30 +1783,45 @@ async function connectAmiiboDevice(){
     conn.buffer = merged;
     if (conn.waiter) conn.waiter();
   });
+  device.addEventListener('gattserverdisconnected', () => {
+    logBle('藍牙已斷線');
+    if (activeConn === conn) activeConn = null;
+  }, { once: true });
 
-  // 協定辨識：送一次明文 A2 B2，看回覆是明文還是加密封包
-  const res = await rawRequest(conn, Uint8Array.from([0xA2, 0xB2]), buf => {
-    if (startsWith(buf, [0xB2, 0xA2])) return buf.length >= 3 ? buf : null;
-    if (buf.length < 4) return null;
-    return buf.length >= 4 + buf[2] ? buf.slice(0, 4 + buf[2]) : null;
-  });
-  if (startsWith(res, [0xB2, 0xA2])) {
-    conn.protocol = 'legacy';
-    conn.info = parseDeviceInfo(res);
-  } else {
-    let plain;
-    try { plain = decryptFrame(res); } catch (e) { plain = new Uint8Array(0); }
-    if (!startsWith(plain, [0xB2, 0xA2])) {
-      try { device.gatt.disconnect(); } catch(_){}
-      throw new Error('無法辨識裝置協定，已停止，沒有寫入任何資料（回覆：' + toHex(res.slice(0, 8)) + '）');
+  try {
+    // 協定辨識：送一次明文 A2 B2，看回覆是明文還是加密封包
+    const res = await rawRequest(conn, Uint8Array.from([0xA2, 0xB2]), buf => {
+      if (startsWith(buf, [0xB2, 0xA2])) return buf.length >= 3 ? buf : null;
+      if (buf.length < 4) return null;
+      return buf.length >= 4 + buf[2] ? buf.slice(0, 4 + buf[2]) : null;
+    });
+    if (startsWith(res, [0xB2, 0xA2])) {
+      conn.protocol = 'legacy';
+      conn.info = parseDeviceInfo(res);
+    } else {
+      let plain;
+      try { plain = decryptFrame(res); } catch (e) { plain = new Uint8Array(0); }
+      if (!startsWith(plain, [0xB2, 0xA2])) {
+        throw new Error('無法辨識裝置協定，已停止，沒有寫入任何資料（回覆：' + toHex(res.slice(0, 8)) + '）');
+      }
+      conn.protocol = 'new';
+      // 正式用自己的序號再問一次裝置資訊
+      conn.info = parseDeviceInfo(await sendCommand(conn, [0xA2, 0xB2], [0xB2, 0xA2]));
     }
-    conn.protocol = 'new';
-    // 正式用自己的序號再問一次裝置資訊
-    const info = await sendCommand(conn, [0xA2, 0xB2], [0xB2, 0xA2]);
-    conn.info = parseDeviceInfo(info);
+  } catch (e) {
+    try { device.gatt.disconnect(); } catch(_){}
+    throw e;
   }
-  console.log('[AmiiboLink] 協定', conn.protocol, '裝置資訊', conn.info);
+  logBle(`協定 ${conn.protocol === 'new' ? '新版加密' : '舊版明文'}，韌體 ${conn.info ? conn.info.version : '?'}，模式 ${conn.info ? conn.info.mode + ' ' + (MODE_NAMES[conn.info.mode] || '') : '?'}`);
+  activeConn = conn;
   return conn;
+}
+
+function withTimeout(promise, ms, msg){
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(msg)), ms);
+    promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+  });
 }
 
 async function writeRaw(conn, bytes){
@@ -1769,8 +1830,9 @@ async function writeRaw(conn, bytes){
     if (c.properties.write) await c.writeValueWithResponse(bytes);
     else await c.writeValueWithoutResponse(bytes);
   } catch (e) {
-    // 少數平台一次寫不下長封包，改成 20 bytes 一段送（裝置端會把回覆串起來看）
+    // 少數平台一次寫不下長封包，改成 20 bytes 一段送
     if (bytes.length <= 20) throw e;
+    logBle(`長封包寫入失敗（${e.message}），改用 20 bytes 分段`);
     for (let i = 0; i < bytes.length; i += 20) {
       const part = bytes.slice(i, i + 20);
       if (c.properties.write) await c.writeValueWithResponse(part);
@@ -1784,7 +1846,11 @@ async function writeRaw(conn, bytes){
 function rawRequest(conn, bytes, match, timeoutMs = 7000){
   conn.buffer = new Uint8Array(0);
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => { conn.waiter = null; reject(new Error('裝置沒有回應，寫入已中止（請按一下裝置按鍵喚醒後重試）')); }, timeoutMs);
+    const timer = setTimeout(() => {
+      conn.waiter = null;
+      logBle(`等不到回覆（已收到 ${conn.buffer.length} bytes：${toHex(conn.buffer.slice(0, 8))}）`);
+      reject(new Error('裝置沒有回應，寫入已中止（請按一下裝置按鍵喚醒後重試）'));
+    }, timeoutMs);
     conn.waiter = () => {
       const r = match(conn.buffer);
       if (r) { clearTimeout(timer); conn.waiter = null; resolve(r); }
@@ -1812,6 +1878,7 @@ async function sendCommand(conn, plain, ack){
     reply = await rawRequest(conn, plain, buf => buf.length >= ack.length ? buf : null);
   }
   if (!startsWith(reply, ack)) {
+    logBle(`指令 ${toHex(plain.slice(0, 2))} 回覆不符：預期 ${toHex(ack)}，收到 ${toHex(reply.slice(0, 8))}`);
     throw new Error(`裝置回覆不符（預期 ${toHex(ack)}，收到 ${toHex(reply.slice(0, 4))}），寫入已中止`);
   }
   return reply;
@@ -1820,12 +1887,30 @@ async function sendCommand(conn, plain, ack){
 async function setDeviceMode(conn, key){
   const mode = DEVICE_MODES[conn.protocol][key];
   await sendCommand(conn, [0xA1, 0xB1, mode], [0xB1, 0xA1]);
+  logBle('模式已切換為 ' + mode + ' ' + MODE_NAMES[mode]);
   if (conn.info) conn.info.mode = mode;
   return mode;
 }
 
-function disconnectDevice(conn){
-  try { if (conn && conn.device.gatt.connected) conn.device.gatt.disconnect(); } catch(e){}
+/** 斷開藍牙並等待確認，回傳是否真的斷線 */
+async function disconnectDevice(conn){
+  if (!conn) return true;
+  const dev = conn.device;
+  if (!dev.gatt.connected) { if (activeConn === conn) activeConn = null; return true; }
+  const done = new Promise(r => dev.addEventListener('gattserverdisconnected', () => r(true), { once: true }));
+  try { dev.gatt.disconnect(); } catch(e) { logBle('斷線指令失敗：' + e.message); }
+  const ok = await Promise.race([done, new Promise(r => setTimeout(() => r(!dev.gatt.connected), 2500))]);
+  if (ok) { if (activeConn === conn) activeConn = null; }
+  else logBle('⚠️ 送出斷線後 2.5 秒仍顯示連線中，下次寫入會沿用這條連線');
+  return ok;
+}
+
+// ─── 寫入狀態：顯示在底部膠囊列（不會像提示訊息一樣自動消失） ───
+function setWriteStatus(desc, btnText){
+  const d = document.getElementById('capsuleDesc');
+  const b = document.querySelector('#writeAmiiboBtn span');
+  if (d && desc != null) d.textContent = desc;
+  if (b) b.textContent = btnText || '連線寫入';
 }
 
 async function getBinData(rec){
@@ -1864,47 +1949,66 @@ function prepareDump(buf){
 }
 
 // 點擊「連線寫入」
+let writing = false;
 document.getElementById('writeAmiiboBtn').addEventListener('click', async () => {
-  if(!selectedAmiibo) return;
+  if (!selectedAmiibo || writing) return;
+  writing = true;
   const btn = document.getElementById('writeAmiiboBtn');
   btn.disabled = true;
+  const target = selectedAmiibo;
 
   let conn = null;
   try {
-    const data = prepareDump(await getBinData(selectedAmiibo));
+    setWriteStatus('讀取檔案中…', '準備中');
+    const data = prepareDump(await getBinData(target));
 
-    showEcoToast('請選取 omllbolink 藍牙裝置…');
+    setWriteStatus('請選取 omllbolink 藍牙裝置…', '連線中');
     conn = await connectAmiiboDevice();
+    logBle('寫入 ' + target.path);
 
     // 沒開「無限刷」時，確保裝置在文件模式，否則裝置會自己改 UID，Switch 會報 2115-0178
     let modeNote = '';
     if (!isRandomUid && conn.info && conn.info.mode !== DEVICE_MODES[conn.protocol].file) {
-      showEcoToast('裝置目前是無限模式，切換為文件模式…');
+      setWriteStatus('裝置是無限模式，切換為文件模式…', '切換模式');
       await setDeviceMode(conn, 'file');
-      modeNote = '（已將裝置切為文件模式）';
+      modeNote = '，已切為文件模式';
     }
 
     const commands = buildWriteCommands(data);
     for (let i = 0; i < commands.length; i++) {
-      showEcoToast(`寫入 ${selectedAmiibo.name}… ${i + 1}/${commands.length}`);
+      const pct = Math.round((i + 1) / commands.length * 100);
+      setWriteStatus(`寫入中 ${pct}%`, `寫入中 ${i + 1}/${commands.length}`);
       await sendCommand(conn, commands[i].plain, commands[i].ack);
     }
+    logBle('9 道指令都收到裝置確認，寫入完成');
 
-    // 每一步都收到裝置確認才算成功；完成後斷開藍牙，讓裝置回到 NFC 狀態
+    // 斷開藍牙，讓裝置回到 NFC 狀態
+    setWriteStatus('寫入完成，正在中斷藍牙…', '斷線中');
     await new Promise(r => setTimeout(r, 250));
-    disconnectDevice(conn);
+    const off = await disconnectDevice(conn);
 
-    recordRecent(selectedAmiibo.path);
+    recordRecent(target.path);
     playHaptic('success');
     playSfx('success');
-    showEcoToast('✨ 寫入完成' + modeNote + '，請貼近 Switch 讀取（' + APP_VERSION + '）', 6000);
+    if (off) {
+      setWriteStatus('✅ 寫入完成' + modeNote + '，請貼近 Switch 讀取');
+      showEcoToast('✨ 寫入完成，請貼近 Switch 讀取（' + APP_VERSION + '）', 5000);
+    } else {
+      setWriteStatus('✅ 寫入完成，但藍牙沒有斷開，請按一下裝置按鍵');
+      showEcoToast('寫入完成，但藍牙沒有斷開。請按一下裝置按鍵，或關閉瀏覽器的藍牙背景連線後再讀取（' + APP_VERSION + '）', 7000);
+    }
     renderCategories();
   } catch(err) {
     console.error(err);
-    disconnectDevice(conn);
-    showEcoToast('❌ ' + err.message + '（' + APP_VERSION + '）', 6000);
+    logBle('❌ ' + err.message);
+    await disconnectDevice(conn);
+    setWriteStatus('❌ ' + err.message);
+    showEcoToast('❌ ' + err.message + '（' + APP_VERSION + '）', 7000);
   } finally {
+    writing = false;
     btn.disabled = false;
+    const b = document.querySelector('#writeAmiiboBtn span');
+    if (b) b.textContent = '連線寫入';
   }
 });
 
@@ -1912,24 +2016,33 @@ document.getElementById('writeAmiiboBtn').addEventListener('click', async () => 
 //  設備模式設定
 // ═══════════════════════════════════════
 const dModalBackdrop = document.getElementById('deviceModalBackdrop');
-document.getElementById('deviceModeBtn').onclick = () => dModalBackdrop.classList.add('open');
+document.getElementById('deviceModeBtn').onclick = () => { renderBleLog(); dModalBackdrop.classList.add('open'); };
 document.getElementById('deviceModalCloseBtn').onclick = () => dModalBackdrop.classList.remove('open');
 dModalBackdrop.onclick = e => { if (e.target === dModalBackdrop) dModalBackdrop.classList.remove('open'); };
+document.getElementById('copyBleLogBtn').onclick = async () => {
+  const text = `Amiibo 傳輸工具 ${APP_VERSION}\n${navigator.userAgent}\n` + bleLog.join('\n');
+  try { await navigator.clipboard.writeText(text); showEcoToast('已複製傳輸紀錄'); }
+  catch (e) { showEcoToast('無法複製，請長按紀錄文字手動複製'); }
+};
 
 async function switchModeFromUi(key){
   let conn = null;
+  const btns = document.querySelectorAll('.dm-btn');
+  btns.forEach(b => b.disabled = true);
   try {
-    showEcoToast('正在連接裝置…');
+    showEcoToast('正在連接裝置…', 4000);
     conn = await connectAmiiboDevice();
     const mode = await setDeviceMode(conn, key);
-    disconnectDevice(conn);
+    await disconnectDevice(conn);
     playHaptic('success');
     playSfx('success');
     showEcoToast('✅ 已切換為「' + MODE_NAMES[mode] + '」');
-    dModalBackdrop.classList.remove('open');
   } catch(err) {
-    disconnectDevice(conn);
-    showEcoToast('❌ ' + err.message, 6000);
+    logBle('❌ ' + err.message);
+    await disconnectDevice(conn);
+    showEcoToast('❌ ' + err.message, 7000);
+  } finally {
+    btns.forEach(b => b.disabled = false);
   }
 }
 document.getElementById('setSequentialModeBtn').onclick = () => switchModeFromUi('file');
@@ -1998,12 +2111,12 @@ document.getElementById('manualFileInput').addEventListener('change', e => {
 
 // Toast 提示
 let toastTimer;
-function showEcoToast(msg){
+function showEcoToast(msg, ms = 2600){
   const el = document.getElementById('ecoToast');
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+  toastTimer = setTimeout(() => el.classList.remove('show'), ms);
 }
 
 function escH(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
