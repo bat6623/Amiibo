@@ -903,7 +903,7 @@ header{
 
 <script>
 // ─── 版號：每次修改都要更新（用來確認手機讀到的是不是最新版） ───
-const APP_VERSION = 'v1.5.0';
+const APP_VERSION = 'v1.6.0';
 const APP_BUILD_DATE = '2026-11-17';
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('appVersionLabel');
@@ -1752,58 +1752,96 @@ async function omllRequest(conn, payload, label){
   return data;
 }
 
-// CRC16 候選算法：官方的 CRC16 由伺服器提供、算法未公開，
-// 所以依序嘗試常見算法，裝置對 06 指令回 00 就代表算法正確，並記住下次直接用。
-function crc16(data, { poly, init, refin, xorout }){
+// CRC16 候選算法：官方的 CRC16 由伺服器提供、算法未公開。
+// v1.5.0 實測常見 6 種都被拒絕，所以改用 CRC RevEng 目錄的全部 30 種 16-bit CRC，
+// 每種再試高低位元組兩種順序，外加 16-bit 加總。裝置對 06 回 00 就代表正確，記住下次直接用。
+function crc16g(data, [poly, init, refin, refout, xorout]){
+  const rev8 = b => { let r = 0; for (let i = 0; i < 8; i++) r |= ((b >> i) & 1) << (7 - i); return r; };
+  const rev16 = v => { let r = 0; for (let i = 0; i < 16; i++) r |= ((v >> i) & 1) << (15 - i); return r; };
   let crc = init;
-  for (const byte of data) {
-    if (refin) {
-      crc ^= byte;
-      for (let i = 0; i < 8; i++) crc = crc & 1 ? (crc >>> 1) ^ poly : crc >>> 1;
-    } else {
-      crc ^= byte << 8;
-      for (let i = 0; i < 8; i++) crc = crc & 0x8000 ? ((crc << 1) ^ poly) & 0xFFFF : (crc << 1) & 0xFFFF;
-    }
+  for (let byte of data) {
+    if (refin) byte = rev8(byte);
+    crc ^= byte << 8;
+    for (let i = 0; i < 8; i++) crc = crc & 0x8000 ? ((crc << 1) ^ poly) & 0xFFFF : (crc << 1) & 0xFFFF;
   }
+  if (refout) crc = rev16(crc);
   return (crc ^ xorout) & 0xFFFF;
 }
-const CRC16_VARIANTS = {
-  'MODBUS':      { poly: 0xA001, init: 0xFFFF, refin: true,  xorout: 0x0000 },
-  'CCITT-FALSE': { poly: 0x1021, init: 0xFFFF, refin: false, xorout: 0x0000 },
-  'XMODEM':      { poly: 0x1021, init: 0x0000, refin: false, xorout: 0x0000 },
-  'ARC':         { poly: 0xA001, init: 0x0000, refin: true,  xorout: 0x0000 },
-  'KERMIT':      { poly: 0x8408, init: 0x0000, refin: true,  xorout: 0x0000 },
-  'X25':         { poly: 0x8408, init: 0xFFFF, refin: true,  xorout: 0xFFFF },
+const CRC16_CATALOG = {   // [poly, init, refin, refout, xorout]
+  'MODBUS': [0x8005, 0xFFFF, 1, 1, 0x0000], 'IBM-3740': [0x1021, 0xFFFF, 0, 0, 0x0000],
+  'XMODEM': [0x1021, 0x0000, 0, 0, 0x0000], 'ARC': [0x8005, 0x0000, 1, 1, 0x0000],
+  'KERMIT': [0x1021, 0x0000, 1, 1, 0x0000], 'IBM-SDLC': [0x1021, 0xFFFF, 1, 1, 0xFFFF],
+  'USB': [0x8005, 0xFFFF, 1, 1, 0xFFFF], 'MAXIM-DOW': [0x8005, 0x0000, 1, 1, 0xFFFF],
+  'MCRF4XX': [0x1021, 0xFFFF, 1, 1, 0x0000], 'GENIBUS': [0x1021, 0xFFFF, 0, 0, 0xFFFF],
+  'SPI-FUJITSU': [0x1021, 0x1D0F, 0, 0, 0x0000], 'UMTS': [0x8005, 0x0000, 0, 0, 0x0000],
+  'CMS': [0x8005, 0xFFFF, 0, 0, 0x0000], 'GSM': [0x1021, 0x0000, 0, 0, 0xFFFF],
+  'DNP': [0x3D65, 0x0000, 1, 1, 0xFFFF], 'EN-13757': [0x3D65, 0x0000, 0, 0, 0xFFFF],
+  'CDMA2000': [0xC867, 0xFFFF, 0, 0, 0x0000], 'DDS-110': [0x8005, 0x800D, 0, 0, 0x0000],
+  'DECT-R': [0x0589, 0x0000, 0, 0, 0x0001], 'DECT-X': [0x0589, 0x0000, 0, 0, 0x0000],
+  'ISO-IEC-14443-3-A': [0x1021, 0xC6C6, 1, 1, 0x0000], 'LJ1200': [0x6F63, 0x0000, 0, 0, 0x0000],
+  'NRSC-5': [0x080B, 0xFFFF, 1, 1, 0x0000], 'OPENSAFETY-A': [0x5935, 0x0000, 0, 0, 0x0000],
+  'OPENSAFETY-B': [0x755B, 0x0000, 0, 0, 0x0000], 'PROFIBUS': [0x1DCF, 0xFFFF, 0, 0, 0xFFFF],
+  'RIELLO': [0x1021, 0xB2AA, 1, 1, 0x0000], 'T10-DIF': [0x8BB7, 0x0000, 0, 0, 0x0000],
+  'TELEDISK': [0xA097, 0x0000, 0, 0, 0x0000], 'TMS37157': [0x1021, 0x89EC, 1, 1, 0x0000],
 };
-function crcOrder(){
+// 每個候選：名稱 → 計算出要放進 06 指令的兩個位元組 [第1, 第2]
+function crcCandidates(data){
+  const list = [];
+  for (const [name, params] of Object.entries(CRC16_CATALOG)) {
+    const c = crc16g(data, params);
+    list.push([name, [(c >> 8) & 0xFF, c & 0xFF]]);
+    list.push([name + '/低位在前', [c & 0xFF, (c >> 8) & 0xFF]]);
+  }
+  const sum = data.reduce((a, b) => (a + b) & 0xFFFF, 0);
+  list.push(['SUM16', [(sum >> 8) & 0xFF, sum & 0xFF]]);
+  list.push(['SUM16/低位在前', [sum & 0xFF, (sum >> 8) & 0xFF]]);
   let saved = null;
   try { saved = localStorage.getItem('omll_crc'); } catch(e) {}
-  const names = Object.keys(CRC16_VARIANTS);
-  return saved && names.includes(saved) ? [saved, ...names.filter(n => n !== saved)] : names;
+  const i = list.findIndex(([n]) => n === saved);
+  if (i > 0) list.unshift(list.splice(i, 1)[0]);
+  return list;
 }
 
-/** omllbolink 寫入：05 分包送資料 → 06 完成；CRC 錯就換下一種算法重送 */
-async function omllWrite(conn, data, onProgress){
-  const order = crcOrder();
-  for (let attempt = 0; attempt < order.length; attempt++) {
-    const name = order[attempt];
-    for (let off = 0; off < data.length; off += 80) {
-      const chunk = data.slice(off, off + 80);
-      onProgress(off / data.length, attempt);
-      await omllRequest(conn, [0x05, (off >> 8) & 0xFF, off & 0xFF, chunk.length, ...chunk], '送資料');
-    }
-    const crc = crc16(data, CRC16_VARIANTS[name]);
-    try {
-      await omllRequest(conn, [0x06, (crc >> 8) & 0xFF, crc & 0xFF, (data.length >> 8) & 0xFF, data.length & 0xFF], '完成寫入');
-      logBle(`完成寫入，裝置確認 OK（CRC16 ${name} = ${crc.toString(16).padStart(4, '0').toUpperCase()}）`);
-      try { localStorage.setItem('omll_crc', name); } catch(e) {}
-      return name;
-    } catch (e) {
-      if (e.omllStatus === undefined) throw e;
-      logBle(`CRC16 ${name} 被裝置拒絕（${toHex([e.omllStatus])}），改試下一種`);
-    }
+async function omllSendData(conn, data, onProgress, pass){
+  for (let off = 0; off < data.length; off += 80) {
+    const chunk = data.slice(off, off + 80);
+    onProgress(off / data.length, pass);
+    await omllRequest(conn, [0x05, (off >> 8) & 0xFF, off & 0xFF, chunk.length, ...chunk], '送資料');
   }
-  throw new Error('裝置拒絕了所有 CRC16 算法，寫入失敗（請把傳輸紀錄傳給開發者）');
+}
+async function omllTryFinish(conn, data, name, bytes){
+  try {
+    await omllRequest(conn, [0x06, bytes[0], bytes[1], (data.length >> 8) & 0xFF, data.length & 0xFF], '完成寫入');
+    logBle(`完成寫入，裝置確認 OK（校驗 ${name} = ${toHex(bytes)}）`);
+    try { localStorage.setItem('omll_crc', name); } catch(e) {}
+    return true;
+  } catch (e) {
+    if (e.omllStatus === undefined) throw e;
+    return e.omllStatus;
+  }
+}
+
+/** omllbolink 寫入：05 分包送資料 → 06 完成；校驗被拒就換下一種 */
+async function omllWrite(conn, data, onProgress){
+  const cands = crcCandidates(data);
+  // 第一輪：資料只送一次，接著逐一試 06（快）
+  await omllSendData(conn, data, onProgress, 0);
+  const codes = {};
+  for (const [name, bytes] of cands) {
+    onProgress(1, 0, name);
+    const r = await omllTryFinish(conn, data, name, bytes);
+    if (r === true) return name;
+    codes[toHex([r])] = (codes[toHex([r])] || 0) + 1;
+  }
+  logBle(`第一輪 ${cands.length} 種校驗都被拒絕，錯誤碼統計：${JSON.stringify(codes)}`);
+  // 第二輪：每種都先重送資料再試（以防裝置在 06 失敗後清掉資料）
+  for (let i = 0; i < cands.length; i++) {
+    const [name, bytes] = cands[i];
+    await omllSendData(conn, data, r => onProgress(r, 1, `${i + 1}/${cands.length}`), 1);
+    const r = await omllTryFinish(conn, data, name, bytes);
+    if (r === true) return name;
+  }
+  throw new Error(`裝置拒絕了全部 ${cands.length} 種校驗方式，寫入失敗（請把傳輸紀錄傳給開發者）`);
 }
 
 function parseDeviceInfo(p){
@@ -2095,9 +2133,10 @@ document.getElementById('writeAmiiboBtn').addEventListener('click', async () => 
     }
 
     if (conn.protocol === 'omll') {
-      await omllWrite(conn, data, (ratio, attempt) => {
+      await omllWrite(conn, data, (ratio, pass, note) => {
         const pct = Math.round(ratio * 100);
-        setWriteStatus(attempt ? `寫入中 ${pct}%（第 ${attempt + 1} 次校驗）` : `寫入中 ${pct}%`, `寫入中 ${pct}%`);
+        if (ratio >= 1 && pass === 0) setWriteStatus(`校驗中（${note || ''}）`, '校驗中');
+        else setWriteStatus(pass ? `第二輪寫入 ${note || ''}` : `寫入中 ${pct}%`, `寫入中 ${pct}%`);
       });
     } else {
       const commands = buildWriteCommands(data);
