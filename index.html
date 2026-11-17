@@ -885,6 +885,7 @@ header{
         <p>• 裝置有實體按鍵的話，按一下喚醒後再貼近 Switch。</p>
         <p>• 平貼在 Switch 右搖桿頂部感應區 1～2 秒。</p>
       </div>
+      <button class="dm-btn" id="diagnoseBtn" style="margin-top:16px">🔍 裝置診斷（只讀取，不會寫入）</button>
       <div class="dm-log-head">
         <b>傳輸紀錄</b>
         <button class="dm-mini-btn" id="copyBleLogBtn">複製</button>
@@ -902,7 +903,7 @@ header{
 
 <script>
 // ─── 版號：每次修改都要更新（用來確認手機讀到的是不是最新版） ───
-const APP_VERSION = 'v1.3.0';
+const APP_VERSION = 'v1.4.0';
 const APP_BUILD_DATE = '2026-11-17';
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('appVersionLabel');
@@ -2087,6 +2088,72 @@ const dModalBackdrop = document.getElementById('deviceModalBackdrop');
 document.getElementById('deviceModeBtn').onclick = () => { renderBleLog(); dModalBackdrop.classList.add('open'); };
 document.getElementById('deviceModalCloseBtn').onclick = () => dModalBackdrop.classList.remove('open');
 dModalBackdrop.onclick = e => { if (e.target === dModalBackdrop) dModalBackdrop.classList.remove('open'); };
+// ─── 裝置診斷：列出所有通道，對每個可寫通道送「查詢裝置資訊 A2 B2」，記錄哪裡有回應 ───
+const DIAG_SERVICES = [
+  NUS_SERVICE, FF10_SERVICE,
+  '0000fee7-0000-1000-8000-00805f9b34fb', '0000ffe0-0000-1000-8000-00805f9b34fb',
+  '0000fff0-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb',
+  '0000ff20-0000-1000-8000-00805f9b34fb', '0000180a-0000-1000-8000-00805f9b34fb',
+  '0000180f-0000-1000-8000-00805f9b34fb', '0000fe59-0000-1000-8000-00805f9b34fb',
+];
+const shortUuid = u => /^0000[0-9a-f]{4}-0000-1000-8000-00805f9b34fb$/.test(u) ? u.slice(4, 8).toUpperCase() : u.slice(0, 8);
+async function diagnoseDevice(){
+  if (activeConn) await disconnectDevice(activeConn);
+  if (!navigator.bluetooth) throw new Error('這個瀏覽器不支援藍牙');
+  logBle('— 裝置診斷開始（' + APP_VERSION + '）');
+  const device = await navigator.bluetooth.requestDevice({
+    filters: ['omllbo', 'amiibolink', 'AmiiboLink', 'amiibo', 'Amiibo', 'amiloop', 'allmiibo', 'ALLMIIBO'].map(namePrefix => ({ namePrefix })),
+    optionalServices: DIAG_SERVICES
+  });
+  logBle('裝置 ' + (device.name || '(無名稱)'));
+  const server = await withTimeout(device.gatt.connect(), 10000, '藍牙連線逾時');
+  try {
+    const services = await server.getPrimaryServices();
+    const writables = [];
+    for (const svc of services) {
+      let chars = [];
+      try { chars = await svc.getCharacteristics(); } catch (e) {}
+      logBle(`服務 ${shortUuid(svc.uuid)}（${chars.length} 個特徵）`);
+      for (const c of chars) {
+        const pr = c.properties, f = [];
+        if (pr.read) f.push('讀'); if (pr.write) f.push('寫'); if (pr.writeWithoutResponse) f.push('寫無回'); if (pr.notify) f.push('通知'); if (pr.indicate) f.push('指示');
+        let extra = '';
+        if (pr.read) { try { const v = await withTimeout(c.readValue(), 3000, 'x'); extra = ' 值=' + toHex(new Uint8Array(v.buffer).slice(0, 20)); } catch (e) {} }
+        logBle(`  特徵 ${shortUuid(c.uuid)} [${f.join('/')}]${extra}`);
+        if (pr.notify || pr.indicate) {
+          try {
+            await withTimeout(c.startNotifications(), 4000, 'x');
+            c.addEventListener('characteristicvaluechanged', e => {
+              const v = e.target.value;
+              logBle(`  ⬅ 收到 ${shortUuid(c.uuid)}：${toHex(new Uint8Array(v.buffer, v.byteOffset, v.byteLength).slice(0, 24))}`);
+            });
+          } catch (e) { logBle(`  （${shortUuid(c.uuid)} 無法開啟通知）`); }
+        }
+        if (pr.write || pr.writeWithoutResponse) writables.push(c);
+      }
+    }
+    for (const c of writables) {
+      for (const [label, bytes] of [['明文 A2 B2', Uint8Array.from([0xA2, 0xB2])], ['加密 A2 B2', encryptFrame(Uint8Array.from([0xA2, 0xB2]), [0, 0])]]) {
+        logBle(`➡ 送 ${label} 到 ${shortUuid(c.uuid)}`);
+        try {
+          if (c.properties.write) await c.writeValueWithResponse(bytes); else await c.writeValueWithoutResponse(bytes);
+        } catch (e) { logBle('  寫入失敗：' + e.message); }
+        await new Promise(r => setTimeout(r, 1200));
+      }
+    }
+    logBle('— 診斷結束');
+  } finally {
+    try { device.gatt.disconnect(); } catch (e) {}
+  }
+}
+document.getElementById('diagnoseBtn').onclick = async () => {
+  const btn = document.getElementById('diagnoseBtn');
+  btn.disabled = true;
+  try { await diagnoseDevice(); showEcoToast('診斷完成，請按「複製」把紀錄傳回來', 5000); }
+  catch (e) { logBle('❌ 診斷：' + e.message); showEcoToast('❌ ' + e.message, 6000); }
+  finally { btn.disabled = false; }
+};
+
 document.getElementById('copyBleLogBtn').onclick = async () => {
   const text = `Amiibo 傳輸工具 ${APP_VERSION}\n${navigator.userAgent}\n` + bleLog.join('\n');
   try { await navigator.clipboard.writeText(text); showEcoToast('已複製傳輸紀錄'); }
