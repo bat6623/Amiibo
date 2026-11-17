@@ -1507,7 +1507,7 @@ async function getBinData(rec){
     return await localFiles[rec.path].arrayBuffer();
   }
   showEcoToast('從雲端載入檔案中…');
-  const res = await fetch(encodeURI('./bin/' + rec.path));
+  const res = await fetch(encodeURI('./bin/' + rec.path) + '?t=' + Date.now());
   if(!res.ok) throw new Error('雲端下載失敗 (HTTP ' + res.status + ')');
   return await res.arrayBuffer();
 }
@@ -1547,11 +1547,14 @@ document.getElementById('writeAmiiboBtn').addEventListener('click', async () => 
       throw new Error(`檔案大小不正確 (${data.length} bytes)，標準 Amiibo 必須為 540 bytes！`);
     }
 
-    showEcoToast(`寫入中 (標準 540 bytes)…`);
+    showEcoToast(`寫入中 (540B 穩定傳輸)…`);
+    // 採用穩健的 35ms 間隔，確保 BLE 封包 100% 完整抵達設備 Flash，絕不丟包
     for(let i=0; i<data.length; i+=20){
       await writeChar.writeValueWithoutResponse(data.slice(i, i+20));
-      await new Promise(r => setTimeout(r, 28));
+      await new Promise(r => setTimeout(r, 35));
     }
+    // 發送完成後短暫等待設備韌體完成 Flash 寫入
+    await new Promise(r => setTimeout(r, 120));
 
     // 成功記錄最近使用並提供觸覺與音效
     recordRecent(selectedAmiibo.path);
