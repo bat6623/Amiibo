@@ -738,6 +738,7 @@ header{
   </div>
   <div class="header-actions">
     <button class="h-btn icon-only" id="headerFavBtn" title="我的常用收藏">⭐</button>
+    <button class="h-btn icon-only" id="deviceModeBtn" title="設備設定與修復 (修復 2115-0178 報錯)">⚙️</button>
     <button class="h-btn icon-only" id="soundToggleBtn" title="點擊切換音效開關">🔊</button>
     <button class="h-btn icon-only" id="openDrawerBtn" title="選擇系列分類">🏷️</button>
     <button class="h-btn" id="pickFolderBtn" title="自選本地資料夾">📂 <span>資料夾</span></button>
@@ -795,6 +796,41 @@ header{
       <button class="drawer-close" id="drawerCloseBtn">✕</button>
     </div>
     <div class="drawer-scroll-body" id="drawerScrollBody"></div>
+  </div>
+</div>
+
+<!-- 設備模式與 2115-0178 修復彈窗 -->
+<div class="drawer-backdrop" id="deviceModalBackdrop">
+  <div class="drawer-box" style="max-width:440px;">
+    <div class="drawer-pill-handle"></div>
+    <div class="drawer-title-row">
+      <h3 style="font-size:16px;display:flex;align-items:center;gap:6px;">⚙️ 設備設定與 2115-0178 修復</h3>
+      <button class="drawer-close" id="deviceModalCloseBtn">✕</button>
+    </div>
+    <div style="padding:16px 20px 24px;font-size:13px;line-height:1.6;color:var(--text-sec);">
+      <div style="background:rgba(43,107,75,0.08);padding:12px 14px;border-radius:12px;margin-bottom:14px;border:1px solid rgba(43,107,75,0.2);color:var(--text-pri);">
+        <b style="color:var(--primary);">💡 關於 Switch 錯誤 2115-0178：</b><br>
+        1. 設備若開啟了「隨機 UID」功能，會破壞任天堂官方 bin 檔案的 HMAC 數位簽名，導致 Switch 報錯。<br>
+        2. 請點擊下方按鈕將設備切換為「標準順序模式（不篡改 UID）」。
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="capsule-action-btn" id="setSequentialModeBtn" style="width:100%;height:40px;justify-content:center;background:var(--primary);color:#fff;">
+          🔒 切換為標準順序模式（修復 2115-0178 推薦）
+        </button>
+        <button class="h-btn" id="setAutoRandomModeBtn" style="width:100%;height:38px;justify-content:center;border:1px solid var(--border);">
+          🎲 切換為自動隨機模式 (Auto Random)
+        </button>
+        <button class="h-btn" id="setManualRandomModeBtn" style="width:100%;height:38px;justify-content:center;border:1px solid var(--border);">
+          🔘 切換為手動隨機模式 (Manual Random)
+        </button>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:var(--text-sec);line-height:1.5;">
+        <b>Switch 讀取操作訣竅：</b><br>
+        • 藍牙寫入完成後，本網頁會<b>自動中斷藍牙連線</b>。<br>
+        • 若設備上有實體小按鍵，請按一下喚醒 NFC 發射狀態。<br>
+        • 平貼在 Switch 右搖桿頂部感應區 1~2 秒即可成功辨識。
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1495,11 +1531,13 @@ function selectCard(rec){
 }
 
 // ═══════════════════════════════════════
-//  藍牙傳輸流程
+//  藍牙通訊協定與傳輸流程 (AmiiboLink 官方標準協定)
 // ═══════════════════════════════════════
-const SVC = '0000ff10-0000-1000-8000-00805f9b34fb';
-const WRT = '0000ff11-0000-1000-8000-00805f9b34fb';
-const NTF = '0000ff12-0000-1000-8000-00805f9b34fb';
+// 支援服務列表：自定義 0xFF10 與 Nordic UART 6E400001
+const KNOWN_SERVICES = [
+  '0000ff10-0000-1000-8000-00805f9b34fb',
+  '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+];
 
 async function getBinData(rec){
   if(localFiles[rec.path]){
@@ -1512,55 +1550,191 @@ async function getBinData(rec){
   return await res.arrayBuffer();
 }
 
+/**
+ * 將 540 字節的標準 Amiibo Dump 封裝為 AmiiboLink 官方標準通訊幀序列
+ * (包含握手起始長度、27 個分包帶序號的 26-byte 幀、結尾寫入保存提交指令)
+ */
+function processDumpToAmiiboLinkCommands(inputArray) {
+  const writeCommands = [];
+  const workingArray = new Uint8Array(540);
+  workingArray.set(inputArray.slice(0, 540), 0);
+
+  // 1. 握手與長度宣告 (0x021C = 540 bytes)
+  writeCommands.push(Uint8Array.from([0xA0, 0xB0]));
+  writeCommands.push(Uint8Array.from([0xAC, 0xAC, 0x00, 0x04, 0x00, 0x00, 0x02, 0x1C]));
+  writeCommands.push(Uint8Array.from([0xAB, 0xAB, 0x02, 0x1C]));
+
+  // 2. 27 個數據幀：每包 20 字節資料，包裝為 26 字節幀 [0xDD, 0xAA, 0x00, 0x14, ...20字節, 0x00, 序號]
+  for (let i = 0; i < workingArray.length; i += 20) {
+    const slice = workingArray.slice(i, i + 20);
+    const iteration = Math.floor(i / 20) + 1; // 1 ~ 27
+
+    const tempArray = new Uint8Array(26);
+    tempArray[0] = 0xDD;
+    tempArray[1] = 0xAA;
+    tempArray[2] = 0x00;
+    tempArray[3] = 0x14; // 20 bytes payload
+    tempArray.set(slice, 4);
+    tempArray[24] = 0x00;
+    tempArray[25] = iteration;
+
+    writeCommands.push(tempArray);
+  }
+
+  // 3. 結束與 Flash / EEPROM 提交保存指令
+  writeCommands.push(Uint8Array.from([0xBC, 0xBC]));
+  writeCommands.push(Uint8Array.from([0xCC, 0xDD]));
+
+  return writeCommands;
+}
+
+/**
+ * 連線並自動辨識設備服務與讀寫特徵
+ */
+async function connectAmiiboDevice() {
+  const device = await navigator.bluetooth.requestDevice({
+    filters: [
+      { namePrefix: 'omllbo' },
+      { namePrefix: 'amiibo' },
+      { namePrefix: 'Amiibo' },
+      { namePrefix: 'amiloop' },
+      { namePrefix: 'Pixl' },
+      { namePrefix: 'allmiibo' },
+      { namePrefix: 'ALLMIIBO' }
+    ],
+    optionalServices: KNOWN_SERVICES
+  });
+
+  if (!device.gatt) throw new Error('設備不支援 GATT');
+  if (device.gatt.connected) {
+    await device.gatt.disconnect();
+  }
+
+  const server = await device.gatt.connect();
+
+  let writeChar = null;
+  let notifyChar = null;
+
+  // 優先嘗試標準 0xFF10 服務
+  try {
+    const service = await server.getPrimaryService('0000ff10-0000-1000-8000-00805f9b34fb');
+    writeChar = await service.getCharacteristic('0000ff11-0000-1000-8000-00805f9b34fb');
+    try {
+      notifyChar = await service.getCharacteristic('0000ff12-0000-1000-8000-00805f9b34fb');
+    } catch(e) {}
+  } catch(e) {
+    // 回退嘗試 Nordic UART 服務
+    try {
+      const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
+      writeChar = await service.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e');
+      try {
+        notifyChar = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
+      } catch(err) {}
+    } catch(err) {
+      throw new Error('未找到相容的 AmiiboLink / omllbo 藍牙特徵');
+    }
+  }
+
+  if (notifyChar) {
+    try {
+      await notifyChar.startNotifications();
+    } catch(e) {
+      console.warn('Notifications 啟動受限，將以直接發送模式運行:', e);
+    }
+  }
+
+  return { device, server, writeChar, notifyChar };
+}
+
+/**
+ * 穩健發送指令封包序列（支援 ACK 監聽與安全超時保護）
+ */
+async function sendCommandsToDevice(conn, commands, onProgress) {
+  const { writeChar, notifyChar } = conn;
+  let idx = 0;
+
+  for (const cmd of commands) {
+    idx++;
+    if (onProgress) onProgress(idx, commands.length);
+
+    let ackReceived = false;
+    let cleanup = () => {};
+
+    const ackPromise = new Promise(resolve => {
+      if (!notifyChar) return resolve();
+      const listener = () => {
+        ackReceived = true;
+        cleanup();
+        resolve();
+      };
+      cleanup = () => {
+        try { notifyChar.removeEventListener('characteristicvaluechanged', listener); } catch(e){}
+      };
+      notifyChar.addEventListener('characteristicvaluechanged', listener);
+    });
+
+    // 優先使用帶響應寫入，若不支援或異常自動回退到無響應寫入
+    try {
+      if (writeChar.writeValueWithResponse) {
+        await writeChar.writeValueWithResponse(cmd);
+      } else if (writeChar.writeValue) {
+        await writeChar.writeValue(cmd);
+      } else {
+        await writeChar.writeValueWithoutResponse(cmd);
+      }
+    } catch (e) {
+      await writeChar.writeValueWithoutResponse(cmd);
+    }
+
+    // 等待 ACK 應答或 45ms 超時安全推進
+    const timeoutPromise = new Promise(r => setTimeout(r, 45));
+    await Promise.race([ackPromise, timeoutPromise]);
+    cleanup();
+  }
+}
+
+// 點擊「連線寫入」
 document.getElementById('writeAmiiboBtn').addEventListener('click', async () => {
   if(!selectedAmiibo) return;
   const btn = document.getElementById('writeAmiiboBtn');
   btn.disabled = true;
 
+  let conn = null;
   try {
     const buf = await getBinData(selectedAmiibo);
-    const data = new Uint8Array(buf);
+    let data = new Uint8Array(buf);
 
-    showEcoToast('請選取 omllbolink 裝置…');
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'omllbo' }],
-      optionalServices: [SVC]
-    });
-
-    showEcoToast('藍牙連線中…');
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(SVC);
-    const writeChar = await service.getCharacteristic(WRT);
-    const notifyChar = await service.getCharacteristic(NTF);
-
-    await notifyChar.startNotifications();
-    notifyChar.addEventListener('characteristicvaluechanged', e => {
-      const hex = Array.from(new Uint8Array(e.target.value.buffer)).map(b => b.toString(16).padStart(2,'0')).join(' ');
-      console.log('Device Notification:', hex);
-    });
-
-    // 🔒 嚴格標準化為官方標準 540 bytes，禁止擅改 UID（擅改 UID 會破壞 HMAC 簽名導致 Switch 報錯 2115-0178）
-    if(data.length > 540){
-      data = data.slice(0, 540);
-    }
-    if(data.length !== 540){
+    if (data.length > 540) data = data.slice(0, 540);
+    if (data.length !== 540) {
       throw new Error(`檔案大小不正確 (${data.length} bytes)，標準 Amiibo 必須為 540 bytes！`);
     }
 
-    showEcoToast(`寫入中 (540B 穩定傳輸)…`);
-    // 採用穩健的 35ms 間隔，確保 BLE 封包 100% 完整抵達設備 Flash，絕不丟包
-    for(let i=0; i<data.length; i+=20){
-      await writeChar.writeValueWithoutResponse(data.slice(i, i+20));
-      await new Promise(r => setTimeout(r, 35));
-    }
-    // 發送完成後短暫等待設備韌體完成 Flash 寫入
-    await new Promise(r => setTimeout(r, 120));
+    showEcoToast('請選取 omllbo / amiibo 藍牙裝置…');
+    conn = await connectAmiiboDevice();
+
+    // 封裝為 AmiiboLink 官方標準協定命令序列 (共 32 個指令包)
+    const commands = processDumpToAmiiboLinkCommands(data);
+
+    showEcoToast(`開始寫入 ${selectedAmiibo.name}…`);
+    await sendCommandsToDevice(conn, commands, (cur, total) => {
+      showEcoToast(`寫入進度 ${cur}/${total} (${Math.round(cur / total * 100)}%)…`);
+    });
+
+    // 等待 Flash 寫入穩定完成
+    await new Promise(r => setTimeout(r, 250));
+
+    // 🌟 關鍵：寫入完成後主動斷開藍牙，使硬體設備退出 BLE 模式並進入 NFC 發射狀態！
+    try {
+      if (conn.device && conn.device.gatt && conn.device.gatt.connected) {
+        await conn.device.gatt.disconnect();
+      }
+    } catch(e) {}
 
     // 成功記錄最近使用並提供觸覺與音效
     recordRecent(selectedAmiibo.path);
     playHaptic('success');
     playSfx('success');
-    showEcoToast(`✨ 寫入完成！官方完整簽名已就緒`);
+    showEcoToast('✨ 寫入完成！已中斷藍牙，請貼近 Switch 讀取', 6000);
     renderCategories();
   } catch(err) {
     console.error(err);
@@ -1569,6 +1743,68 @@ document.getElementById('writeAmiiboBtn').addEventListener('click', async () => 
     btn.disabled = false;
   }
 });
+
+// ═══════════════════════════════════════
+//  設備模式設定 (修復隨機UID導致的 2115-0178)
+// ═══════════════════════════════════════
+const dModalBackdrop = document.getElementById('deviceModalBackdrop');
+document.getElementById('deviceModeBtn').onclick = () => dModalBackdrop.classList.add('open');
+document.getElementById('deviceModalCloseBtn').onclick = () => dModalBackdrop.classList.remove('open');
+dModalBackdrop.onclick = e => { if (e.target === dModalBackdrop) dModalBackdrop.classList.remove('open'); };
+
+// 切換為標準順序模式 (Sequential Mode - 不篡改 UID，推薦)
+document.getElementById('setSequentialModeBtn').onclick = async () => {
+  try {
+    showEcoToast('正在連接設備設定模式…');
+    const conn = await connectAmiiboDevice();
+    const seqCmd = [Uint8Array.from([0x00, 0x00, 0x10, 0x03, 0x2F, 0x25, 0xD8, 0x0C, 0x49, 0x42, 0xC0, 0xD5, 0x0B, 0x0B, 0xC6, 0xDF, 0xCA, 0x60, 0x21, 0xFC])];
+    await sendCommandsToDevice(conn, seqCmd);
+    await new Promise(r => setTimeout(r, 200));
+    try { await conn.device.gatt.disconnect(); } catch(e){}
+    playHaptic('success');
+    playSfx('success');
+    showEcoToast('✅ 已成功切換為「標準順序模式」！原裝 UID 已鎖定');
+    dModalBackdrop.classList.remove('open');
+  } catch(err) {
+    showEcoToast('❌ ' + err.message);
+  }
+};
+
+// 切換為自動隨機模式
+document.getElementById('setAutoRandomModeBtn').onclick = async () => {
+  try {
+    showEcoToast('正在連接設備設定模式…');
+    const conn = await connectAmiiboDevice();
+    const autoCmd = [Uint8Array.from([0x00, 0x00, 0x10, 0x03, 0xE3, 0x96, 0x51, 0xEC, 0x07, 0xE7, 0xE5, 0x54, 0x37, 0xB6, 0x13, 0x8E, 0x80, 0xC9, 0xB3, 0x09])];
+    await sendCommandsToDevice(conn, autoCmd);
+    await new Promise(r => setTimeout(r, 200));
+    try { await conn.device.gatt.disconnect(); } catch(e){}
+    playHaptic('success');
+    playSfx('success');
+    showEcoToast('⚠️ 已切換為「自動隨機模式」(可能觸發 2115-0178)');
+    dModalBackdrop.classList.remove('open');
+  } catch(err) {
+    showEcoToast('❌ ' + err.message);
+  }
+};
+
+// 切換為手動隨機模式
+document.getElementById('setManualRandomModeBtn').onclick = async () => {
+  try {
+    showEcoToast('正在連接設備設定模式…');
+    const conn = await connectAmiiboDevice();
+    const manualCmd = [Uint8Array.from([0x00, 0x00, 0x10, 0x03, 0x34, 0x1F, 0x98, 0xE8, 0x46, 0x19, 0x85, 0x75, 0xE3, 0xD3, 0xE0, 0x42, 0x5D, 0x41, 0x89, 0x42])];
+    await sendCommandsToDevice(conn, manualCmd);
+    await new Promise(r => setTimeout(r, 200));
+    try { await conn.device.gatt.disconnect(); } catch(e){}
+    playHaptic('success');
+    playSfx('success');
+    showEcoToast('⚠️ 已切換為「手動隨機模式」');
+    dModalBackdrop.classList.remove('open');
+  } catch(err) {
+    showEcoToast('❌ ' + err.message);
+  }
+};
 
 // 搜尋互動
 const sInput = document.getElementById('searchInput');
