@@ -700,29 +700,69 @@ header{
 
 
 /* ─── 手機端頂部導航列防破版與極致適配 ─── */
+/* ─── 抽屜內本地檔案載入區 ─── */
+.drawer-local-file-bar {
+  display: none;
+}
+
+/* ─── 手機端頂部導航列防破版與極致適配 ─── */
 @media (max-width: 600px){
   header{
-    height: calc(58px + var(--safe-top)) !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    height: calc(56px + var(--safe-top)) !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+  }
+  .brand-wrap{
+    flex-shrink: 0 !important;
   }
   .brand-logo-img{
-    height: 32px !important; /* 手機端顯著放大 LOGO */
-    max-width: 102px !important;
+    height: 28px !important;
+    max-width: 92px !important;
   }
   .header-actions{
-    gap: 5px !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    flex-shrink: 0 !important;
   }
   .h-btn{
-    width: 33px !important;
-    height: 33px !important;
+    width: 32px !important;
+    height: 32px !important;
     padding: 0 !important;
     justify-content: center !important;
     font-size: 14px !important;
     border-radius: 50% !important;
+    flex-shrink: 0 !important;
   }
-  #pickFolderBtn span{
-    display: none !important; /* 手機端隱藏「資料夾」文字，只保留 📂 圖標 */
+  /* 手機端頂部隱藏資料夾與單檔按鈕（避免 6 個按鈕造成手機折行破版），完整收納進抽屜選單 */
+  #pickFolderBtn, #pickSingleBtn {
+    display: none !important;
+  }
+  .drawer-local-file-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px 14px;
+    border-bottom: 1px solid rgba(22, 51, 36, 0.08);
+  }
+  .drawer-file-btn {
+    flex: 1;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-pri);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .drawer-file-btn:active {
+    background: rgba(43,107,75,0.08);
   }
 }
 
@@ -792,8 +832,12 @@ header{
   <div class="drawer-box">
     <div class="drawer-pill-handle"></div>
     <div class="drawer-title-row">
-      <h3>系列分類清單</h3>
+      <h3>系列分類與檔案</h3>
       <button class="drawer-close" id="drawerCloseBtn">✕</button>
+    </div>
+    <div class="drawer-local-file-bar">
+      <button class="drawer-file-btn" id="drawerPickSingleBtn">📄 選取單一檔案</button>
+      <button class="drawer-file-btn" id="drawerPickFolderBtn">📂 載入自選資料夾</button>
     </div>
     <div class="drawer-scroll-body" id="drawerScrollBody"></div>
   </div>
@@ -1709,6 +1753,24 @@ document.getElementById('writeAmiiboBtn').addEventListener('click', async () => 
       throw new Error(`檔案大小不正確 (${data.length} bytes)，標準 Amiibo 必須為 540 bytes！`);
     }
 
+    // 檔頭檢查：UID 第一碼必須是 0x04，且兩個校驗碼要對，否則是壞檔，寫進去 Switch 一定報 2115-0178
+    const bcc0ok = data[3] === (0x88 ^ data[0] ^ data[1] ^ data[2]);
+    const bcc1ok = data[8] === (data[4] ^ data[5] ^ data[6] ^ data[7]);
+    if (data[0] !== 0x04 || !bcc0ok || !bcc1ok) {
+      throw new Error('這個 bin 檔本身是壞的（UID 校驗錯誤），Switch 無法讀取，請換一個來源的檔案');
+    }
+
+    // 補上密碼 PWD 與 PACK：多數網路下載的 dump 這兩欄是 0，
+    // 但 Switch 讀取時會用 UID 算出的密碼驗證，對不上就報 2115-0178。
+    // 這兩欄不在簽章範圍內，補上不會破壞檔案。
+    data = new Uint8Array(data);
+    data[532] = 0xAA ^ data[1] ^ data[4];
+    data[533] = 0x55 ^ data[2] ^ data[5];
+    data[534] = 0xAA ^ data[4] ^ data[6];
+    data[535] = 0x55 ^ data[5] ^ data[7];
+    data[536] = 0x80;
+    data[537] = 0x80;
+
     showEcoToast('請選取 omllbo / amiibo 藍牙裝置…');
     conn = await connectAmiiboDevice();
 
@@ -1848,6 +1910,14 @@ document.getElementById('folderFileInput').addEventListener('change', e => {
 
 // 選擇單一檔案
 document.getElementById('pickSingleBtn').onclick = () => document.getElementById('manualFileInput').click();
+document.getElementById('drawerPickSingleBtn').onclick = () => {
+  closeDrawer();
+  document.getElementById('manualFileInput').click();
+};
+document.getElementById('drawerPickFolderBtn').onclick = () => {
+  closeDrawer();
+  document.getElementById('folderFileInput').click();
+};
 document.getElementById('manualFileInput').addEventListener('change', e => {
   const f = e.target.files[0];
   if(!f) return;
