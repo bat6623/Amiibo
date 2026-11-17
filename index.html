@@ -874,6 +874,7 @@ header{
         • 若設備上有實體小按鍵，請按一下喚醒 NFC 發射狀態。<br>
         • 平貼在 Switch 右搖桿頂部感應區 1~2 秒即可成功辨識。
       </div>
+      <div id="appVersionLabel" style="margin-top:14px;text-align:center;font-size:11px;color:var(--text-sec);opacity:.7;"></div>
     </div>
   </div>
 </div>
@@ -884,6 +885,14 @@ header{
 <input type="file" id="folderFileInput" webkitdirectory multiple accept=".bin">
 
 <script>
+// ─── 版號：每次修改都要更新（用來確認手機讀到的是不是最新版） ───
+const APP_VERSION = 'v1.1.0';
+const APP_BUILD_DATE = '2026-11-17';
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('appVersionLabel');
+  if (el) el.textContent = `版本 ${APP_VERSION}（${APP_BUILD_DATE}）`;
+});
+console.log('[Amiibo 傳輸工具]', APP_VERSION, APP_BUILD_DATE);
 // ═══════════════════════════════════════
 //  資料庫與全域狀態
 // ═══════════════════════════════════════
@@ -1888,12 +1897,12 @@ document.getElementById('writeAmiiboBtn').addEventListener('click', async () => 
     recordRecent(selectedAmiibo.path);
     playHaptic('success');
     playSfx('success');
-    showEcoToast('✨ 寫入完成' + modeNote + '，請貼近 Switch 讀取', 6000);
+    showEcoToast('✨ 寫入完成' + modeNote + '，請貼近 Switch 讀取（' + APP_VERSION + '）', 6000);
     renderCategories();
   } catch(err) {
     console.error(err);
     disconnectDevice(conn);
-    showEcoToast('❌ ' + err.message, 6000);
+    showEcoToast('❌ ' + err.message + '（' + APP_VERSION + '）', 6000);
   } finally {
     btn.disabled = false;
   }
