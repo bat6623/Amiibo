@@ -903,7 +903,7 @@ header{
 
 <script>
 // ─── 版號：每次修改都要更新（用來確認手機讀到的是不是最新版） ───
-const APP_VERSION = 'v1.4.0';
+const APP_VERSION = 'v1.5.0';
 const APP_BUILD_DATE = '2026-11-17';
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('appVersionLabel');
@@ -1619,9 +1619,11 @@ const KNOWN_SERVICES = [NUS_SERVICE, FF10_SERVICE];
 const DEVICE_MODES = {
   new:    { manual: 1, file: 2, auto: 4 },
   legacy: { manual: 1, file: 2, auto: 3 },
-  ff10:   { manual: 1, file: 2, auto: 4 },
+  omll:   { manual: 1, file: 3, auto: 2 },   // omllbolink：依官方「Nfc tag」小程式
 };
 const MODE_NAMES = { 1: '手動無限模式', 2: '文件模式（保留原 UID）', 3: '自動無限模式', 4: '自動無限模式' };
+const OMLL_MODE_NAMES = { 1: '手動無限模式', 2: '自動無限模式', 3: '文件切換模式' };
+const modeName = (protocol, mode) => (protocol === 'omll' ? OMLL_MODE_NAMES : MODE_NAMES)[mode] || ('模式 ' + mode);
 
 // ─── 標準 AES-128（ECB），瀏覽器內建加密 API 不支援 ECB，所以自己實作 ───
 const AES_SBOX = new Uint8Array(256), AES_INV = new Uint8Array(256);
@@ -1711,40 +1713,97 @@ function buildWriteCommands(data){
   return cmds.map(c => ({ plain: Uint8Array.from(c.plain), ack: c.ack }));
 }
 
-/** FF10 通道：540 bytes 切成 27 包 × 20 bytes，序號 1～27（2026-11-17 實機寫入成功的格式） */
-function buildFf10Commands(data){
-  const cmds = [
-    Uint8Array.from([0xA0, 0xB0]),
-    Uint8Array.from([0xAC, 0xAC, 0x00, 0x04, 0x00, 0x00, 0x02, 0x1C]),
-    Uint8Array.from([0xAB, 0xAB, 0x02, 0x1C]),
-  ];
-  for (let i = 0; i < 540; i += 20) {
-    const f = new Uint8Array(26);
-    f.set([0xDD, 0xAA, 0x00, 0x14]);
-    f.set(data.slice(i, i + 20), 4);
-    f[24] = 0x00;
-    f[25] = i / 20 + 1;
-    cmds.push(f);
+// ═══ omllbolink（FF10 通道）協定 ═══
+// 依官方「Nfc tag」微信小程式（wx1e36d0ce973e235f）的寫法重建：
+//   外框：FF | 內容長度 | 01 01 | 內容 | 內容加總(1 byte) | FE
+//   回覆內容：[指令, 狀態(00=成功), ...]
+//   01 查版本、02 查狀態、03 設模式、05 送資料（每包 ≤80 bytes）、06 完成（CRC16 + 檔案長度）
+//   07 恢復出廠、08/09/0A 韌體更新 —— 這些刻意不實作
+function omllFrame(payload){
+  const f = new Uint8Array(payload.length + 6);
+  let sum = 0;
+  f[0] = 0xFF; f[1] = payload.length; f[2] = 0x01; f[3] = 0x01;
+  payload.forEach((b, i) => { f[4 + i] = b; sum = (sum + b) & 0xFF; });
+  f[4 + payload.length] = sum;
+  f[5 + payload.length] = 0xFE;
+  return f;
+}
+function omllParse(buf){
+  for (let o = 0; o + 6 <= buf.length; o++) {
+    if (buf[o] !== 0xFF) continue;
+    const n = buf[o + 1], end = o + n + 6;
+    if (buf.length < end) return null;
+    if (buf[end - 1] !== 0xFE) continue;
+    const data = buf.slice(o + 4, o + 4 + n);
+    const sum = data.reduce((a, b) => (a + b) & 0xFF, 0);
+    if (sum !== buf[end - 2]) continue;
+    return data;
   }
-  cmds.push(Uint8Array.from([0xBC, 0xBC]));
-  cmds.push(Uint8Array.from([0xCC, 0xDD]));
-  return cmds;
+  return null;
+}
+/** 送一道 omllbolink 指令，回傳回覆內容；狀態不是 00 就丟錯 */
+async function omllRequest(conn, payload, label){
+  const data = await rawRequest(conn, omllFrame(Uint8Array.from(payload)), omllParse, 6000);
+  if (data[1] !== 0x00) {
+    const err = new Error(`${label}：裝置回覆錯誤碼 ${toHex([data[1]])}`);
+    err.omllStatus = data[1];
+    throw err;
+  }
+  return data;
 }
 
-/** FF10 通道送一包：有回覆就往下，沒回覆最多等 45ms（裝置在這個通道通常不回覆） */
-async function sendFf10(conn, bytes){
-  conn.buffer = new Uint8Array(0);
-  const got = new Promise(r => { conn.waiter = () => r(); });
-  const c = conn.writeChar;
-  try {
-    if (c.properties.write) await c.writeValueWithResponse(bytes);
-    else await c.writeValueWithoutResponse(bytes);
-  } catch (e) {
-    await c.writeValueWithoutResponse(bytes);
+// CRC16 候選算法：官方的 CRC16 由伺服器提供、算法未公開，
+// 所以依序嘗試常見算法，裝置對 06 指令回 00 就代表算法正確，並記住下次直接用。
+function crc16(data, { poly, init, refin, xorout }){
+  let crc = init;
+  for (const byte of data) {
+    if (refin) {
+      crc ^= byte;
+      for (let i = 0; i < 8; i++) crc = crc & 1 ? (crc >>> 1) ^ poly : crc >>> 1;
+    } else {
+      crc ^= byte << 8;
+      for (let i = 0; i < 8; i++) crc = crc & 0x8000 ? ((crc << 1) ^ poly) & 0xFFFF : (crc << 1) & 0xFFFF;
+    }
   }
-  await Promise.race([got, new Promise(r => setTimeout(r, 45))]);
-  conn.waiter = null;
-  return conn.buffer.length;
+  return (crc ^ xorout) & 0xFFFF;
+}
+const CRC16_VARIANTS = {
+  'MODBUS':      { poly: 0xA001, init: 0xFFFF, refin: true,  xorout: 0x0000 },
+  'CCITT-FALSE': { poly: 0x1021, init: 0xFFFF, refin: false, xorout: 0x0000 },
+  'XMODEM':      { poly: 0x1021, init: 0x0000, refin: false, xorout: 0x0000 },
+  'ARC':         { poly: 0xA001, init: 0x0000, refin: true,  xorout: 0x0000 },
+  'KERMIT':      { poly: 0x8408, init: 0x0000, refin: true,  xorout: 0x0000 },
+  'X25':         { poly: 0x8408, init: 0xFFFF, refin: true,  xorout: 0xFFFF },
+};
+function crcOrder(){
+  let saved = null;
+  try { saved = localStorage.getItem('omll_crc'); } catch(e) {}
+  const names = Object.keys(CRC16_VARIANTS);
+  return saved && names.includes(saved) ? [saved, ...names.filter(n => n !== saved)] : names;
+}
+
+/** omllbolink 寫入：05 分包送資料 → 06 完成；CRC 錯就換下一種算法重送 */
+async function omllWrite(conn, data, onProgress){
+  const order = crcOrder();
+  for (let attempt = 0; attempt < order.length; attempt++) {
+    const name = order[attempt];
+    for (let off = 0; off < data.length; off += 80) {
+      const chunk = data.slice(off, off + 80);
+      onProgress(off / data.length, attempt);
+      await omllRequest(conn, [0x05, (off >> 8) & 0xFF, off & 0xFF, chunk.length, ...chunk], '送資料');
+    }
+    const crc = crc16(data, CRC16_VARIANTS[name]);
+    try {
+      await omllRequest(conn, [0x06, (crc >> 8) & 0xFF, crc & 0xFF, (data.length >> 8) & 0xFF, data.length & 0xFF], '完成寫入');
+      logBle(`完成寫入，裝置確認 OK（CRC16 ${name} = ${crc.toString(16).padStart(4, '0').toUpperCase()}）`);
+      try { localStorage.setItem('omll_crc', name); } catch(e) {}
+      return name;
+    } catch (e) {
+      if (e.omllStatus === undefined) throw e;
+      logBle(`CRC16 ${name} 被裝置拒絕（${toHex([e.omllStatus])}），改試下一種`);
+    }
+  }
+  throw new Error('裝置拒絕了所有 CRC16 算法，寫入失敗（請把傳輸紀錄傳給開發者）');
 }
 
 function parseDeviceInfo(p){
@@ -1827,9 +1886,17 @@ async function connectAmiiboDevice(){
   }, { once: true });
 
   if (svcName === 'FF10') {
-    // FF10 通道（omllbolink 實測）：裝置不回覆詢問指令，沿用 v5c2d6e6 驗證成功的寫法
-    conn.protocol = 'ff10';
-    logBle('協定 FF10（20 bytes 分包，不等回覆）');
+    conn.protocol = 'omll';
+    try {
+      const v = await omllRequest(conn, [0x01], '查版本');
+      const version = Array.from(v.slice(2, 5)).join('.');
+      const st = await omllRequest(conn, [0x02], '查狀態');
+      conn.info = { version, mode: st[3], battery: st[2] };
+      logBle(`協定 omllbolink，韌體 ${version}，電量 ${st[2]}%，模式 ${st[3]} ${modeName('omll', st[3])}`);
+    } catch (e) {
+      try { device.gatt.disconnect(); } catch(_){}
+      throw e;
+    }
     activeConn = conn;
     return conn;
   }
@@ -1858,7 +1925,7 @@ async function connectAmiiboDevice(){
     try { device.gatt.disconnect(); } catch(_){}
     throw e;
   }
-  logBle(`協定 ${conn.protocol === 'new' ? '新版加密' : '舊版明文'}，韌體 ${conn.info ? conn.info.version : '?'}，模式 ${conn.info ? conn.info.mode + ' ' + (MODE_NAMES[conn.info.mode] || '') : '?'}`);
+  logBle(`協定 ${conn.protocol === 'new' ? '新版加密' : '舊版明文'}，韌體 ${conn.info ? conn.info.version : '?'}，模式 ${conn.info ? conn.info.mode + ' ' + modeName(conn.protocol, conn.info.mode) : '?'}`);
   activeConn = conn;
   return conn;
 }
@@ -1932,20 +1999,14 @@ async function sendCommand(conn, plain, ack){
 
 async function setDeviceMode(conn, key){
   const mode = DEVICE_MODES[conn.protocol][key];
-  if (conn.protocol === 'ff10') {
-    // 與 v5c2d6e6 送出的封包完全相同（解開為 A1 B1 <mode>，補位內容非 0，所以不重新產生）
-    const FF10_MODE_FRAMES = {
-      2: [0x00, 0x00, 0x10, 0x03, 0x2F, 0x25, 0xD8, 0x0C, 0x49, 0x42, 0xC0, 0xD5, 0x0B, 0x0B, 0xC6, 0xDF, 0xCA, 0x60, 0x21, 0xFC],
-      4: [0x00, 0x00, 0x10, 0x03, 0xE3, 0x96, 0x51, 0xEC, 0x07, 0xE7, 0xE5, 0x54, 0x37, 0xB6, 0x13, 0x8E, 0x80, 0xC9, 0xB3, 0x09],
-      1: [0x00, 0x00, 0x10, 0x03, 0x34, 0x1F, 0x98, 0xE8, 0x46, 0x19, 0x85, 0x75, 0xE3, 0xD3, 0xE0, 0x42, 0x5D, 0x41, 0x89, 0x42],
-    };
-    const n = await sendFf10(conn, Uint8Array.from(FF10_MODE_FRAMES[mode]));
-    logBle(`FF10 模式指令已送出（裝置回覆 ${n} bytes，這個通道無法確認是否生效）`);
-    await new Promise(r => setTimeout(r, 200));
+  if (conn.protocol === 'omll') {
+    await omllRequest(conn, [0x03, mode], '設定模式');
+    logBle('模式已切換為 ' + mode + ' ' + modeName('omll', mode));
+    if (conn.info) conn.info.mode = mode;
     return mode;
   }
   await sendCommand(conn, [0xA1, 0xB1, mode], [0xB1, 0xA1]);
-  logBle('模式已切換為 ' + mode + ' ' + MODE_NAMES[mode]);
+  logBle('模式已切換為 ' + mode + ' ' + modeName(conn.protocol, mode));
   if (conn.info) conn.info.mode = mode;
   return mode;
 }
@@ -2026,21 +2087,18 @@ document.getElementById('writeAmiiboBtn').addEventListener('click', async () => 
 
     // 沒開「無限刷」時，確保裝置在文件模式，否則裝置會自己改 UID，Switch 會報 2115-0178
     let modeNote = '';
-    if (!isRandomUid && conn.protocol !== 'ff10' && conn.info && conn.info.mode !== DEVICE_MODES[conn.protocol].file) {
+    // omllbolink 官方寫入時不切模式，這裡也不動
+    if (!isRandomUid && conn.protocol !== 'omll' && conn.info && conn.info.mode !== DEVICE_MODES[conn.protocol].file) {
       setWriteStatus('裝置是無限模式，切換為文件模式…', '切換模式');
       await setDeviceMode(conn, 'file');
       modeNote = '，已切為文件模式';
     }
 
-    if (conn.protocol === 'ff10') {
-      const cmds = buildFf10Commands(data);
-      let replied = 0;
-      for (let i = 0; i < cmds.length; i++) {
-        const pct = Math.round((i + 1) / cmds.length * 100);
-        setWriteStatus(`寫入中 ${pct}%`, `寫入中 ${pct}%`);
-        replied += await sendFf10(conn, cmds[i]);
-      }
-      logBle(`FF10 已送出 ${cmds.length} 包（裝置回覆共 ${replied} bytes）`);
+    if (conn.protocol === 'omll') {
+      await omllWrite(conn, data, (ratio, attempt) => {
+        const pct = Math.round(ratio * 100);
+        setWriteStatus(attempt ? `寫入中 ${pct}%（第 ${attempt + 1} 次校驗）` : `寫入中 ${pct}%`, `寫入中 ${pct}%`);
+      });
     } else {
       const commands = buildWriteCommands(data);
       for (let i = 0; i < commands.length; i++) {
@@ -2171,7 +2229,7 @@ async function switchModeFromUi(key){
     await disconnectDevice(conn);
     playHaptic('success');
     playSfx('success');
-    showEcoToast('✅ 已切換為「' + MODE_NAMES[mode] + '」');
+    showEcoToast('✅ 已切換為「' + modeName(conn.protocol, mode) + '」');
   } catch(err) {
     logBle('❌ ' + err.message);
     await disconnectDevice(conn);
