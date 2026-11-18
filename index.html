@@ -784,8 +784,53 @@ header{
 }
 
 </style>
+<style>
+/* ══ 進入密碼鎖 ══ */
+.pw-lock{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--bg-app)}
+html.pw-ok .pw-lock{display:none}
+html:not(.pw-ok) body{overflow:hidden}
+.pw-card{width:100%;max-width:340px;background:#fff;border:1px solid var(--border-card);border-radius:24px;box-shadow:var(--shadow-card);padding:28px 24px 24px;text-align:center}
+.pw-logo{height:34px;width:auto;margin-bottom:18px}
+.pw-title{font-size:17px;font-weight:750;color:var(--text-title)}
+.pw-sub{margin-top:6px;font-size:13px;color:var(--text-muted)}
+.pw-input{width:100%;height:48px;margin-top:20px;border:1px solid var(--border-sub);border-radius:14px;background:var(--bg-card-sub);text-align:center;font-size:22px;letter-spacing:10px;color:var(--text-title);outline:none;transition:border-color .15s}
+.pw-input:focus{border-color:var(--sage-main);background:#fff}
+.pw-input.err{border-color:#d9534f}
+.pw-err{min-height:18px;margin-top:8px;font-size:12px;color:#d9534f}
+.pw-btn{width:100%;height:46px;margin-top:6px;border:none;border-radius:999px;background:var(--forest-dark);color:#fff;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;transition:background .15s,transform .1s}
+.pw-btn:active:not(:disabled){background:var(--forest-hover);transform:scale(.98)}
+.pw-btn:disabled{background:var(--border-sub);color:var(--text-muted);cursor:not-allowed}
+.pw-shake{animation:pwShake .35s}
+@keyframes pwShake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+/* 設定彈窗內的修改密碼區 */
+.pw-change{margin-top:16px;padding-top:14px;border-top:1px solid var(--border-card)}
+.pw-change input{width:100%;height:42px;margin-top:8px;padding:0 12px;border:1px solid var(--border-sub);border-radius:10px;background:#fff;font-size:15px;color:var(--text-title);outline:none}
+.pw-change input:focus{border-color:var(--sage-main)}
+.pw-change .pw-err{text-align:left}
+</style>
+<script>
+// 進入密碼：已在這台裝置解鎖、且密碼沒被改過 → 直接放行（同步判斷，避免鎖畫面閃一下）
+(function(){
+  try{
+    var key = localStorage.getItem('amiibo_pw_hash') || 'default';
+    if (localStorage.getItem('amiibo_pw_ok') === key) document.documentElement.classList.add('pw-ok');
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
+
+<!-- 進入密碼鎖 -->
+<div class="pw-lock" id="pwLock">
+  <form class="pw-card" id="pwForm" autocomplete="off">
+    <img src="assets/amiibo-logo.png" alt="amiibo" class="pw-logo">
+    <div class="pw-title">請輸入密碼</div>
+    <div class="pw-sub">輸入一次後，這台裝置會記住</div>
+    <input class="pw-input" id="pwInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="••••">
+    <div class="pw-err" id="pwErr"></div>
+    <button class="pw-btn" id="pwSubmit" type="submit" disabled>進入</button>
+  </form>
+</div>
 
 <!-- 頂部導覽列 (Sticky 吸頂) -->
 <header>
@@ -891,6 +936,14 @@ header{
         <button class="dm-mini-btn" id="copyBleLogBtn">複製</button>
       </div>
       <pre class="dm-log" id="bleLogBox">尚無紀錄</pre>
+      <div class="pw-change">
+        <b>🔑 修改進入密碼</b>
+        <input id="pwOld" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="目前密碼" autocomplete="off">
+        <input id="pwNew" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="新密碼（4～8 位數字）" autocomplete="off">
+        <input id="pwNew2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="再輸入一次新密碼" autocomplete="off">
+        <div class="pw-err" id="pwChangeErr"></div>
+        <button class="dm-btn primary" id="pwChangeBtn" disabled>儲存新密碼</button>
+      </div>
       <div class="dm-version" id="appVersionLabel"></div>
     </div>
   </div>
@@ -903,8 +956,8 @@ header{
 
 <script>
 // ─── 版號：每次修改都要更新（用來確認手機讀到的是不是最新版） ───
-const APP_VERSION = 'v1.6.0';
-const APP_BUILD_DATE = '2026-11-17';
+const APP_VERSION = 'v1.7.0';
+const APP_BUILD_DATE = '2026-11-18';
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('appVersionLabel');
   if (el) el.textContent = `版本 ${APP_VERSION}（${APP_BUILD_DATE}）`;
@@ -2405,6 +2458,83 @@ if(headerFavBtn){
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
+
+// ═══════════════════════════════════════
+//  進入密碼（預設 0478，存在這台裝置）
+// ═══════════════════════════════════════
+const PW_DEFAULT = '0478';
+const PW_RULE = /^\d{4,8}$/;
+async function pwHash(text){
+  const data = new TextEncoder().encode('amiibo-pw:' + text);
+  if (window.crypto && crypto.subtle){
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return 's:' + [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+  let h = 0x811c9dc5; // 沒有 crypto.subtle（例如部分 file://）時的退路
+  for (const b of data){ h ^= b; h = Math.imul(h, 0x01000193) >>> 0; }
+  return 'f:' + h.toString(16);
+}
+function pwKey(){ return localStorage.getItem('amiibo_pw_hash') || 'default'; }
+async function pwCheck(input){
+  const stored = localStorage.getItem('amiibo_pw_hash');
+  return stored ? (await pwHash(input)) === stored : input === PW_DEFAULT;
+}
+function onlyDigits(el){ el.value = el.value.replace(/\D/g,''); }
+
+(function initPwLock(){
+  const form = document.getElementById('pwForm');
+  const input = document.getElementById('pwInput');
+  const btn = document.getElementById('pwSubmit');
+  const err = document.getElementById('pwErr');
+  if (!document.documentElement.classList.contains('pw-ok')) setTimeout(() => input.focus(), 50);
+  input.addEventListener('input', () => {
+    onlyDigits(input);
+    input.classList.remove('err'); err.textContent = '';
+    btn.disabled = input.value.length < 4;
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (btn.disabled) return;
+    btn.disabled = true;
+    if (await pwCheck(input.value)){
+      localStorage.setItem('amiibo_pw_ok', pwKey());
+      document.documentElement.classList.add('pw-ok');
+      input.value = '';
+      playHaptic('tap');
+    } else {
+      err.textContent = '密碼錯誤，請再試一次';
+      input.classList.add('err');
+      form.classList.remove('pw-shake'); void form.offsetWidth; form.classList.add('pw-shake');
+      input.value = ''; input.focus();
+    }
+  });
+})();
+
+(function initPwChange(){
+  const old = document.getElementById('pwOld');
+  const n1 = document.getElementById('pwNew');
+  const n2 = document.getElementById('pwNew2');
+  const btn = document.getElementById('pwChangeBtn');
+  const err = document.getElementById('pwChangeErr');
+  const sync = () => {
+    [old, n1, n2].forEach(onlyDigits);
+    err.textContent = '';
+    btn.disabled = !(old.value.length >= 4 && n1.value.length >= 4 && n2.value.length >= 4);
+  };
+  [old, n1, n2].forEach(el => el.addEventListener('input', sync));
+  btn.addEventListener('click', async () => {
+    if (!(await pwCheck(old.value))) { err.textContent = '目前密碼不正確'; return; }
+    if (!PW_RULE.test(n1.value)) { err.textContent = '新密碼要 4～8 位數字'; return; }
+    if (n1.value !== n2.value) { err.textContent = '兩次輸入的新密碼不一樣'; return; }
+    const h = await pwHash(n1.value);
+    localStorage.setItem('amiibo_pw_hash', h);
+    localStorage.setItem('amiibo_pw_ok', h); // 改密碼的人已經知道新密碼，不用重新輸入
+    old.value = n1.value = n2.value = '';
+    btn.disabled = true;
+    playHaptic('tap');
+    showEcoToast('🔑 密碼已更新（只影響這台裝置）');
+  });
+})();
 
 </script>
 </body>
